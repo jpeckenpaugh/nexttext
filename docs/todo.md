@@ -22,13 +22,13 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Populate the data module with direct, gender-specific word mappings.*
 
--   [ ] In `gender_terms.py`, define a `GENDER_MAP` dictionary.
--   [ ] Add noun mappings (man -> person, woman -> person, boy -> child, girl -> child).
--   [ ] Add plural noun mappings (men -> people, women -> people).
--   [ ] Add pronoun mappings (he -> they, she -> they, him -> them, her -> them).
--   [ ] Add possessive pronoun mappings (his -> their, hers -> theirs).
--   [ ] Add reflexive pronoun mappings (himself -> themself, herself -> themself).
--   [ ] Define a `REVERSE_GENDER_MAP` for `rebias`, mapping neutral terms to a default biased term (e.g., person -> man, child -> boy).
+-   [x] In `gender_terms.py`, define a `GENDER_MAP` dictionary.
+-   [x] Add noun mappings (man -> person, woman -> person, boy -> child, girl -> child).
+-   [x] Add plural noun mappings (men -> people, women -> people).
+-   [x] Add pronoun mappings (he -> they, she -> they, him -> them, her -> them).
+-   [x] Add possessive pronoun mappings (his -> their, hers -> theirs).
+-   [x] Add reflexive pronoun mappings (himself -> themself, herself -> themself).
+-   [x] Define a `REVERSE_GENDER_MAP` for `rebias`, mapping neutral terms to a default biased term (e.g., person -> man, child -> boy).
 
 ---
 
