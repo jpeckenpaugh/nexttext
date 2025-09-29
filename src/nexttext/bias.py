@@ -19,35 +19,43 @@ from nexttext.data.gender_terms import (
 CONTEXTUAL_KEYWORDS = MALE_ASSOCIATED_KEYWORDS.union(FEMALE_ASSOCIATED_KEYWORDS)
 
 
+# 1. Create the expanded map with all case variations.
+expanded_map = {}
+for k, v in GENDER_MAP.items():
+    expanded_map[k.lower()] = v.lower()
+    expanded_map[k.title()] = v.title()
+    expanded_map[k.upper()] = v.upper()
+
+# 2. Create a list of keys from the map.
+all_keys = list(expanded_map.keys())
+
+# 3. Sort ONLY THE LIST of keys to ensure longest-match priority.
+all_keys.sort(key=len, reverse=True)
+
+# 4. Build the master regex from the sorted list.
+gendered_pattern = re.compile(
+    r"\b(" + "|".join(re.escape(key) for key in all_keys) + r")\b"
+)
+
 def debias(labels: List[str]) -> List[str]:
-    """Neutralize gendered language in a list of labels.
-
-    Args:
-        labels (List[str]): A collection of strings that may contain direct
-            gendered language or pronouns.
-
-    Returns:
-        List[str]: A list with gendered terms replaced by their neutral
-        equivalents.
     """
-
+    Neutralize gendered language using a single, pre-compiled regex built
+    from sorted keys for maximum performance and accuracy.
+    """
     if not labels:
         return []
 
     normalized_labels: List[str] = []
     for label in labels:
-        updated_label = label
-        for gendered_term, neutral_term in GENDER_MAP.items():
-            pattern = rf"\b{re.escape(gendered_term)}\b"
-            updated_label = re.sub(
-                pattern,
-                lambda match, replacement=neutral_term: _apply_casing(replacement, match.group(0)),
-                updated_label,
-                flags=re.IGNORECASE,
-            )
+        # The lambda performs a fast lookup in the unsorted map
+        # using the correctly-prioritized key found by the regex.
+        updated_label = gendered_pattern.sub(
+            lambda match: expanded_map[match.group(0)], 
+            label
+        )
         normalized_labels.append(updated_label)
+        
     return normalized_labels
-
 
 def rebias(labels: List[str], strategy: str = "default") -> List[str]:
     """Reintroduce gendered language into a list of labels.
