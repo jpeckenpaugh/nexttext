@@ -102,12 +102,12 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Verify that both the default and contextual `rebias` strategies work as intended.*
 
--   [ ] In `tests/test_bias.py`, test the default `rebias` strategy (e.g., "A person in a house" -> "A man in a house").
--   [ ] Test the contextual strategy with male-associated keywords ("A person working on a car" -> "A man working on his car").
--   [ ] Test the contextual strategy with female-associated keywords ("A person holding a baby" -> "A woman holding a baby").
--   [ ] Test the round-trip integrity: `rebias(debias(text), strategy='contextual')` should ideally return the original text if it was biased.
--   [ ] Add a test with an empty list `[]`.
--   [ ] Add a test where no neutral words are present to ensure the text is unchanged.
+-   [x] In `tests/test_bias.py`, test the default `rebias` strategy (e.g., "A person in a house" -> "A man in a house").
+-   [x] Test the contextual strategy with male-associated keywords ("A person working on a car" -> "A man working on his car").
+-   [x] Test the contextual strategy with female-associated keywords ("A person holding a baby" -> "A woman holding a baby").
+-   [x] Test the round-trip integrity: `rebias(debias(text), strategy='contextual')` should ideally return the original text if it was biased.
+-   [x] Add a test with an empty list `[]`.
+-   [x] Add a test where no neutral words are present to ensure the text is unchanged.
 
 ---
 

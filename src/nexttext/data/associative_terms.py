@@ -40,11 +40,11 @@ def get_dominant_gender_from_text(text: str) -> str:
     keyword_counts = Counter()
 
     for keyword in MALE_ASSOCIATED_KEYWORDS:
-        if re.search(r"\\b" + re.escape(keyword) + r"\\b", normalized_text):
+        if re.search(r"\b" + re.escape(keyword) + r"\b", normalized_text):
             keyword_counts["male"] += 1
 
     for keyword in FEMALE_ASSOCIATED_KEYWORDS:
-        if re.search(r"\\b" + re.escape(keyword) + r"\\b", normalized_text):
+        if re.search(r"\b" + re.escape(keyword) + r"\b", normalized_text):
             keyword_counts["female"] += 1
 
     if keyword_counts["male"] > keyword_counts["female"]:
