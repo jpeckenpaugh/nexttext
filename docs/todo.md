@@ -8,13 +8,13 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Establish a clean structure for managing bias-related data, separating it from the core application logic.*
 
--   [ ] Create a new directory: `src/nexttext/data/`.
--   [ ] Inside `data`, create a `__init__.py` to make it a package.
--   [ ] Create a new module for gendered term definitions: `src/nexttext/data/gender_terms.py`.
--   [ ] Create a new module for associative term definitions: `src/nexttext/data/associative_terms.py`.
--   [ ] Add a `.gitignore` entry for `src/nexttext/data/__pycache__/` if not already covered.
--   [ ] Create a new core module for the bias/rebias logic: `src/nexttext/bias.py`.
--   [ ] Add a new test file for the new functionality: `tests/test_bias.py`.
+-   [x] Create a new directory: `src/nexttext/data/`.
+-   [x] Inside `data`, create a `__init__.py` to make it a package.
+-   [x] Create a new module for gendered term definitions: `src/nexttext/data/gender_terms.py`.
+-   [x] Create a new module for associative term definitions: `src/nexttext/data/associative_terms.py`.
+-   [x] Add a `.gitignore` entry for `src/nexttext/data/__pycache__/` if not already covered.
+-   [x] Create a new core module for the bias/rebias logic: `src/nexttext/bias.py`.
+-   [x] Add a new test file for the new functionality: `tests/test_bias.py`.
 
 ---
 
