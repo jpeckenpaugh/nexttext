@@ -6,7 +6,7 @@
 - Include module and function docstrings using Google style.
 - Keep functions short and focused; extract helpers when logic becomes complex.
 - When adding tests, place them under `tests/` and mirror the module structure found in `src/`.
-- Update or add documentation when introducing new public functions or modules.
+- Do not update the README.md file unless instructed to.
 
 ## Testing
 - Use `pytest` for automated tests.
