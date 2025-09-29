@@ -21,5 +21,3 @@ addopts = "-ra"
 testpaths = ["tests"]
 pythonpath = ["src"]
 
-[tool.hatch.metadata.hooks.requirements]
-filename = "requirements-dev.txt"

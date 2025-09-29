@@ -11,7 +11,8 @@ It works equally well on **input labels** (human-annotated training data) and **
 ## ✨ Features
 
 - 🧹 **Debias** → Neutralize gendered or stereotypical language automatically  
-- 🔄 **Rebias** → Reintroduce controlled skew for testing and validation  
+- 🔄 **Rebias** → Reintroduce controlled skew for testing and validation, with
+  optional context-aware strategies
 - 📊 Works for both **training data** and **model outputs**  
 - ⚡ Simple API with no heavy dependencies  
 - 🔓 Open-source under a permissive license (MIT)
