@@ -75,13 +75,13 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Enhance the `rebias` function to use the associative keywords for more "intelligent" and context-aware biasing.*
 
--   [ ] In `src/nexttext/bias.py`, import `get_dominant_gender_from_text` and the keyword sets.
--   [ ] Modify the `rebias` function to accept an optional `strategy` argument (e.g., `'default'`, `'contextual'`).
--   [ ] When `strategy='contextual'`, call `get_dominant_gender_from_text` on the input string first.
--   [ ] If the dominant gender is "female", use a female-specific reverse map (e.g., person -> woman). Create this map in `gender_terms.py`.
--   [ ] If the dominant gender is "male" or "neutral", fall back to the default male-biased map.
--   [ ] Update the function logic to choose the correct map before performing the `re.sub()` replacements.
--   [ ] Update the docstrings to explain the new `strategy` parameter.
+-   [x] In `src/nexttext/bias.py`, import `get_dominant_gender_from_text` and the keyword sets.
+-   [x] Modify the `rebias` function to accept an optional `strategy` argument (e.g., `'default'`, `'contextual'`).
+-   [x] When `strategy='contextual'`, call `get_dominant_gender_from_text` on the input string first.
+-   [x] If the dominant gender is "female", use a female-specific reverse map (e.g., person -> woman). Create this map in `gender_terms.py`.
+-   [x] If the dominant gender is "male" or "neutral", fall back to the default male-biased map.
+-   [x] Update the function logic to choose the correct map before performing the `re.sub()` replacements.
+-   [x] Update the docstrings to explain the new `strategy` parameter.
 
 ---
 
