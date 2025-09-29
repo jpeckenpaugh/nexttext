@@ -48,13 +48,13 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Create the core logic for neutralizing gendered language using the structured data maps.*
 
--   [ ] In `src/nexttext/bias.py`, import the `GENDER_MAP` from `data.gender_terms`.
--   [ ] Define the `debias(labels: List[str]) -> List[str]` function signature.
--   [ ] Implement the iteration logic to process each string in the input list.
--   [ ] For each string, iterate through the `GENDER_MAP`.
--   [ ] Use a case-insensitive `re.sub()` with word boundaries (`\b`) to replace gendered terms with their neutral counterparts.
--   [ ] Ensure the function handles an empty list as input without errors.
--   [ ] Add comprehensive docstrings explaining what the function does, its parameters, and what it returns.
+-   [x] In `src/nexttext/bias.py`, import the `GENDER_MAP` from `data.gender_terms`.
+-   [x] Define the `debias(labels: List[str]) -> List[str]` function signature.
+-   [x] Implement the iteration logic to process each string in the input list.
+-   [x] For each string, iterate through the `GENDER_MAP`.
+-   [x] Use a case-insensitive `re.sub()` with word boundaries (`\b`) to replace gendered terms with their neutral counterparts.
+-   [x] Ensure the function handles an empty list as input without errors.
+-   [x] Add comprehensive docstrings explaining what the function does, its parameters, and what it returns.
 
 ---
 
