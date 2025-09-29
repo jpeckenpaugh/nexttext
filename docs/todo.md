@@ -36,11 +36,11 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Capture common gender stereotypes associated with certain keywords to enable more nuanced rebias-ing.*
 
--   [ ] In `associative_terms.py`, define a `MALE_ASSOCIATED_KEYWORDS` set.
--   [ ] Populate `MALE_ASSOCIATED_KEYWORDS` with terms like "sports", "car", "doctor", "work", "garage", "tools".
--   [ ] In `associative_terms.py`, define a `FEMALE_ASSOCIATED_KEYWORDS` set.
--   [ ] Populate `FEMALE_ASSOCIATED_KEYWORDS` with terms like "kitchen", "baby", "nurse", "shopping", "dress", "flowers".
--   [ ] Create a function `get_dominant_gender_from_text(text)` in `associative_terms.py` that checks for the presence of these keywords and returns "male", "female", or "neutral".
+-   [x] In `associative_terms.py`, define a `MALE_ASSOCIATED_KEYWORDS` set.
+-   [x] Populate `MALE_ASSOCIATED_KEYWORDS` with terms like "sports", "car", "doctor", "work", "garage", "tools".
+-   [x] In `associative_terms.py`, define a `FEMALE_ASSOCIATED_KEYWORDS` set.
+-   [x] Populate `FEMALE_ASSOCIATED_KEYWORDS` with terms like "kitchen", "baby", "nurse", "shopping", "dress", "flowers".
+-   [x] Create a function `get_dominant_gender_from_text(text)` in `associative_terms.py` that checks for the presence of these keywords and returns "male", "female", or "neutral".
 
 ---
 
