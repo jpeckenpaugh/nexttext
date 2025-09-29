@@ -44,14 +44,15 @@ pip install nexttext
   "A doctor speaking with a patient while a nurse takes vitals."
 ]
 
->>> rebias("A person working on a car.")
-"A man working on his car."
+>>> rebias(["A person working on a car."])
+["A man working on his car."]
 
->>> rebias("A person holding a baby.")
-"A woman holding a baby."
+# Context-aware rebiasing when you need it
+>>> rebias(["A person holding a baby."], strategy="contextual")
+["A woman holding a baby."]
 
 # Round trip: neutralize, then reintroduce skew
->>> rebias(debias(["A woman holding a baby."]))
+>>> rebias(debias(["A woman holding a baby."]), strategy="contextual")
 ["A woman holding a baby."]
 ```
 

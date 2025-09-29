@@ -115,11 +115,11 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Expose the new functionality to the end-user and clean up the package's public interface.*
 
--   [ ] In `src/nexttext/__init__.py`, import `debias` and `rebias` from the `bias` module.
--   [ ] Add `"debias"` and `"rebias"` to the `__all__` list in `__init__.py`.
--   [ ] Remove any old, now-unused function definitions from `core.py` if they've been superseded.
--   [ ] Manually test the import: `from nexttext import debias, rebias`.
--   [ ] Review the `README.md` and update the "Quick Start" section to reflect the new, improved functions.
+-   [x] In `src/nexttext/__init__.py`, import `debias` and `rebias` from the `bias` module.
+-   [x] Add `"debias"` and `"rebias"` to the `__all__` list in `__init__.py`.
+-   [x] Remove any old, now-unused function definitions from `core.py` if they've been superseded.
+-   [x] Manually test the import: `from nexttext import debias, rebias`.
+-   [x] Review the `README.md` and update the "Quick Start" section to reflect the new, improved functions.
 
 ---
 
