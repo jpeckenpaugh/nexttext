@@ -89,12 +89,12 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Ensure the `debias` function is robust, reliable, and handles edge cases correctly.*
 
--   [ ] In `tests/test_bias.py`, add a test case for simple noun and pronoun replacement.
--   [ ] Add a test to confirm the replacement is case-insensitive (e.g., "Man", "MAN", "man" all become "person").
--   [ ] Add a test to ensure partial words are not replaced (e.g., "his" in "history" is ignored).
--   [ ] Add a test with an empty list `[]` to ensure it returns an empty list.
--   [ ] Add a test with a sentence containing no gendered words to ensure it remains unchanged.
--   [ ] Add a test with multiple gendered words in a single string.
+-   [x] In `tests/test_bias.py`, add a test case for simple noun and pronoun replacement.
+-   [x] Add a test to confirm the replacement is case-insensitive (e.g., "Man", "MAN", "man" all become "person").
+-   [x] Add a test to ensure partial words are not replaced (e.g., "his" in "history" is ignored).
+-   [x] Add a test with an empty list `[]` to ensure it returns an empty list.
+-   [x] Add a test with a sentence containing no gendered words to ensure it remains unchanged.
+-   [x] Add a test with multiple gendered words in a single string.
 
 ---
 
