@@ -49,3 +49,40 @@ def test_rebias_default_mapping():
     """Default rebiasing should restore gendered language using the map."""
 
     assert bias.rebias(["A person and their child"]) == ["A man and his boy"]
+
+
+def test_rebias_contextual_with_male_keywords():
+    """Contextual rebiasing should choose the male map when male cues are present."""
+
+    labels = ["A person working on a car with their tools."]
+    expected = ["A man working on a car with his tools."]
+    assert bias.rebias(labels, strategy="contextual") == expected
+
+
+def test_rebias_contextual_with_female_keywords():
+    """Contextual rebiasing should choose the female map when female cues are present."""
+
+    labels = ["A person holding a baby with their flowers."]
+    expected = ["A woman holding a baby with her flowers."]
+    assert bias.rebias(labels, strategy="contextual") == expected
+
+
+def test_rebias_contextual_round_trip_after_debias():
+    """Debiased labels should regain their original form after contextual rebiasing."""
+
+    original = ["The man fixed his car in the garage."]
+    debiased = bias.debias(original)
+    assert bias.rebias(debiased, strategy="contextual") == original
+
+
+def test_rebias_handles_empty_input():
+    """An empty list should return an empty list regardless of strategy."""
+
+    assert bias.rebias([], strategy="contextual") == []
+
+
+def test_rebias_leaves_text_without_neutral_terms_unchanged():
+    """Sentences without neutral terms should remain unchanged after rebiasing."""
+
+    labels = ["A narrative about bravery."]
+    assert bias.rebias(labels, strategy="contextual") == labels
