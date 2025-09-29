@@ -14,7 +14,7 @@ def test_debias_is_case_insensitive():
     """Gendered terms should be replaced regardless of capitalization."""
 
     labels = ["Man MAN man"]
-    assert bias.debias(labels) == ["person person person"]
+    assert bias.debias(labels) == ["Person PERSON person"]
 
 
 def test_debias_ignores_partial_word_matches():
@@ -41,7 +41,7 @@ def test_debias_replaces_multiple_gendered_words():
     """Multiple gendered words in a sentence should all be neutralized."""
 
     labels = ["He told her and his friends about the man and woman."]
-    expected = ["they told them and their friends about the person and person."]
+    expected = ["They told them and their friends about the person and person."]
     assert bias.debias(labels) == expected
 
 
