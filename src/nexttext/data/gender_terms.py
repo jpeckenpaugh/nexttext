@@ -27,3 +27,14 @@ REVERSE_GENDER_MAP: dict[str, str] = {
     "theirs": "his",
     "themself": "himself",
 }
+
+FEMALE_REVERSE_GENDER_MAP: dict[str, str] = {
+    "person": "woman",
+    "child": "girl",
+    "people": "women",
+    "they": "she",
+    "them": "her",
+    "their": "her",
+    "theirs": "hers",
+    "themself": "herself",
+}
