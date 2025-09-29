@@ -62,12 +62,12 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Create the core logic for re-introducing gendered language, laying the groundwork for contextual biasing.*
 
--   [ ] In `src/nexttext/bias.py`, import the `REVERSE_GENDER_MAP`.
--   [ ] Define the `rebias(labels: List[str]) -> List[str]` function signature.
--   [ ] For this initial implementation, use the `REVERSE_GENDER_MAP` to perform a simple, default rebias (e.g., always to male terms).
--   [ ] Use a case-insensitive `re.sub()` with word boundaries to replace neutral terms with their default biased counterparts.
--   [ ] Ensure the function correctly handles cases where multiple neutral words appear in one sentence.
--   [ ] Add comprehensive docstrings.
+-   [x] In `src/nexttext/bias.py`, import the `REVERSE_GENDER_MAP`.
+-   [x] Define the `rebias(labels: List[str]) -> List[str]` function signature.
+-   [x] For this initial implementation, use the `REVERSE_GENDER_MAP` to perform a simple, default rebias (e.g., always to male terms).
+-   [x] Use a case-insensitive `re.sub()` with word boundaries to replace neutral terms with their default biased counterparts.
+-   [x] Ensure the function correctly handles cases where multiple neutral words appear in one sentence.
+-   [x] Add comprehensive docstrings.
 
 ---
 

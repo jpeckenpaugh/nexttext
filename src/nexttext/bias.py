@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import List
 
-from nexttext.data.gender_terms import GENDER_MAP
+from nexttext.data.gender_terms import GENDER_MAP, REVERSE_GENDER_MAP
 
 
 def debias(labels: List[str]) -> List[str]:
@@ -33,6 +33,25 @@ def debias(labels: List[str]) -> List[str]:
 
 
 def rebias(labels: List[str]) -> List[str]:
-    """Placeholder for the rebias functionality."""
+    """Reintroduce default gendered language into a list of labels.
 
-    raise NotImplementedError("Phase 5 will implement rebias.")
+    Args:
+        labels: Strings that contain neutral language which should be
+            reintroduced to gendered terms using a default mapping.
+
+    Returns:
+        List[str]: Strings where neutral terms have been replaced with their
+        gendered counterparts from :data:`REVERSE_GENDER_MAP`.
+    """
+
+    if not labels:
+        return []
+
+    rebiased_labels: List[str] = []
+    for label in labels:
+        updated_label = label
+        for neutral_term, gendered_term in REVERSE_GENDER_MAP.items():
+            pattern = rf"\b{re.escape(neutral_term)}\b"
+            updated_label = re.sub(pattern, gendered_term, updated_label, flags=re.IGNORECASE)
+        rebiased_labels.append(updated_label)
+    return rebiased_labels
