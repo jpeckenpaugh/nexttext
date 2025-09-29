@@ -28,12 +28,13 @@ def get_dominant_gender_from_text(text: str) -> str:
     """Determine the dominant gender associated with ``text``.
 
     Args:
-        text: The text that will be scanned for gender-associated keywords.
+        text (str): The text that will be scanned, case-insensitively, for
+            gender-associated keywords.
 
     Returns:
         str: ``"male"`` when male-associated keywords appear more frequently,
         ``"female"`` when female-associated keywords dominate, otherwise
-        ``"neutral"``.
+        ``"neutral"`` when counts are even or no keywords are present.
     """
 
     normalized_text = text.lower()

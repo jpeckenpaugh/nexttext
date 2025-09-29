@@ -127,9 +127,9 @@ This plan outlines the 10 phases required to build, test, and release `v0.1.0` o
 
 *Goal: Finalize all user-facing documentation and prepare the package for a `v0.1.0` release.*
 
--   [ ] Ensure all new functions (`debias`, `rebias`, `get_dominant_gender_from_text`) have complete Google-style docstrings.
--   [ ] Update the main `README.md` to explain the new contextual rebias feature.
--   [ ] Check that `pyproject.toml` has the correct version number (`0.1.0`).
--   [ ] Run all tests one final time using `pytest` from the root directory to ensure everything passes.
--   [ ] Consider adding a `CHANGELOG.md` file to document the new features for `v0.1.0`.
--   [ ] Build the package (`python -m build`) and prepare for publishing.
+-   [x] Ensure all new functions (`debias`, `rebias`, `get_dominant_gender_from_text`) have complete Google-style docstrings.
+-   [x] Update the main `README.md` to explain the new contextual rebias feature.
+-   [x] Check that `pyproject.toml` has the correct version number (`0.1.0`).
+-   [x] Run all tests one final time using `pytest` from the root directory to ensure everything passes.
+-   [x] Consider adding a `CHANGELOG.md` file to document the new features for `v0.1.0`.
+-   [x] Build the package (`python -m build`) and prepare for publishing.

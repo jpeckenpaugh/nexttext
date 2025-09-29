@@ -23,11 +23,12 @@ def debias(labels: List[str]) -> List[str]:
     """Neutralize gendered language in a list of labels.
 
     Args:
-        labels: A collection of strings that may contain gendered language.
+        labels (List[str]): A collection of strings that may contain direct
+            gendered language or pronouns.
 
     Returns:
-        List[str]: Strings where direct gendered terms have been replaced with
-        their neutral equivalents.
+        List[str]: A list with gendered terms replaced by their neutral
+        equivalents.
     """
 
     if not labels:
@@ -47,9 +48,9 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
     """Reintroduce gendered language into a list of labels.
 
     Args:
-        labels: Strings that contain neutral language which should be
-            reintroduced to gendered terms using a default mapping.
-        strategy: Controls how the rebiasing occurs. When ``"default"``,
+        labels (List[str]): Strings containing neutral language that should be
+            mapped back to gendered terms.
+        strategy (str): Controls how the rebiasing occurs. When ``"default"``,
             the neutral-to-masculine map is used for every label. When
             ``"contextual"``, the associative keyword sets
             (:data:`MALE_ASSOCIATED_KEYWORDS`, :data:`FEMALE_ASSOCIATED_KEYWORDS`)
@@ -60,6 +61,9 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
         List[str]: Strings where neutral terms have been replaced with their
         gendered counterparts from :data:`REVERSE_GENDER_MAP` or
         :data:`FEMALE_REVERSE_GENDER_MAP` depending on ``strategy``.
+
+    Raises:
+        ValueError: If ``strategy`` is not ``"default"`` or ``"contextual"``.
     """
 
     if not labels:
