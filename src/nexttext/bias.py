@@ -39,7 +39,12 @@ def debias(labels: List[str]) -> List[str]:
         updated_label = label
         for gendered_term, neutral_term in GENDER_MAP.items():
             pattern = rf"\b{re.escape(gendered_term)}\b"
-            updated_label = re.sub(pattern, neutral_term, updated_label, flags=re.IGNORECASE)
+            updated_label = re.sub(
+                pattern,
+                lambda match, replacement=neutral_term: _apply_casing(replacement, match.group(0)),
+                updated_label,
+                flags=re.IGNORECASE,
+            )
         normalized_labels.append(updated_label)
     return normalized_labels
 
@@ -89,6 +94,23 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
 
         for neutral_term, gendered_term in mapping.items():
             pattern = rf"\b{re.escape(neutral_term)}\b"
-            updated_label = re.sub(pattern, gendered_term, updated_label, flags=re.IGNORECASE)
+            updated_label = re.sub(
+                pattern,
+                lambda match, replacement=gendered_term: _apply_casing(replacement, match.group(0)),
+                updated_label,
+                flags=re.IGNORECASE,
+            )
         rebiased_labels.append(updated_label)
     return rebiased_labels
+
+
+def _apply_casing(replacement: str, original: str) -> str:
+    """Return ``replacement`` with casing that mirrors ``original``."""
+
+    if original.isupper():
+        return replacement.upper()
+    if original.islower():
+        return replacement.lower()
+    if original[:1].isupper() and original[1:].islower():
+        return replacement.capitalize()
+    return replacement
