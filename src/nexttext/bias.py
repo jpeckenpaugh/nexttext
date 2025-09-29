@@ -105,12 +105,15 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
 
 
 def _apply_casing(replacement: str, original: str) -> str:
-    """Return ``replacement`` with casing that mirrors ``original``."""
+    """
+    Return ``replacement`` with casing that mirrors ``original``, optimized
+    for the most common use cases in natural language text.
+    """
 
-    if original.isupper():
-        return replacement.upper()
     if original.islower():
-        return replacement.lower()
-    if original[:1].isupper() and original[1:].islower():
+        return replacement
+
+    if original.istitle():
         return replacement.capitalize()
-    return replacement
+
+    return replacement.upper()
