@@ -19,6 +19,15 @@ It works equally well on **input labels** (human-annotated training data) and **
 
 ---
 
+## 🎮 Live Demo
+
+Try `nexttext` directly in your browser (no install required) at
+**[jpeckenpaugh.github.io/nexttext](https://jpeckenpaugh.github.io/nexttext/)**.
+The demo loads the Python package via [Pyodide](https://pyodide.org) and lets
+you run `debias` and `rebias` on your own text.
+
+---
+
 ## 📦 Installation
 
 ```bash

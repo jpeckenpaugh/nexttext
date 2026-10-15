@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>nexttext &mdash; live demo</title>
+  <meta
+    name="description"
+    content="Interactive in-browser demo of nexttext, a lightweight toolkit for neutralizing and re-framing gendered language."
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>nexttext <span class="tag">live demo</span></h1>
+      <p class="lede">
+        Take your text to the next level. Neutralize and re-frame text to reduce
+        hidden skew in AI pipelines &mdash; running entirely in your browser via
+        <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a>.
+      </p>
+      <div id="runtime-status" class="runtime-status" data-state="loading">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="runtime-status-text">Loading Python runtime&hellip;</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel" aria-labelledby="scenarios-heading">
+      <h2 id="scenarios-heading">Demo scenarios</h2>
+      <p class="hint">
+        Click a scenario to load it into the playground and run it. Each scenario
+        mirrors an example from the project README.
+      </p>
+      <div id="scenarios" class="scenario-grid"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="playground-heading">
+      <h2 id="playground-heading">Interactive playground</h2>
+      <form id="playground" class="playground">
+        <label class="field">
+          <span class="field-label">Input (one label per line)</span>
+          <textarea id="input-text" rows="6" spellcheck="false"
+            placeholder="A man seated at a table talking to a young girl."></textarea>
+        </label>
+
+        <div class="controls">
+          <label class="field select-field">
+            <span class="field-label">Operation</span>
+            <select id="operation">
+              <option value="debias">debias &mdash; neutralize</option>
+              <option value="rebias_default">rebias &mdash; default (masculine)</option>
+              <option value="rebias_contextual">rebias &mdash; contextual</option>
+              <option value="round_trip">round trip &mdash; debias then contextual rebias</option>
+              <option value="normalize">normalize_whitespace</option>
+              <option value="word_frequencies">word_frequencies</option>
+            </select>
+          </label>
+          <button type="submit" id="run-button" disabled>Run</button>
+        </div>
+      </form>
+
+      <div class="output-block">
+        <div class="output-head">
+          <span class="field-label">Output</span>
+          <span id="diagnostics" class="diagnostics" aria-live="polite"></span>
+        </div>
+        <pre id="output" class="output" aria-live="polite"><span class="muted">Output will appear here.</span></pre>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="about-heading">
+      <h2 id="about-heading">About nexttext</h2>
+      <p>
+        <code>nexttext</code> is a lightweight Python toolkit for neutralizing and
+        re-framing text to reduce noise, hidden skew, and unwanted artifacts in AI
+        pipelines. It works equally well on human-annotated training labels and on
+        generated labels from captioning or classification models.
+      </p>
+      <ul class="feature-list">
+        <li><strong>Debias</strong> &mdash; neutralize gendered or stereotypical language automatically.</li>
+        <li><strong>Rebias</strong> &mdash; reintroduce controlled skew for testing and validation.</li>
+        <li>Works for both training data and model outputs.</li>
+        <li>Simple API, no heavy dependencies.</li>
+        <li>Open source under the MIT license.</li>
+      </ul>
+      <dl class="meta">
+        <div><dt>Version</dt><dd id="meta-version">0.1.0</dd></div>
+        <div><dt>License</dt><dd>MIT</dd></div>
+        <div><dt>Python</dt><dd id="meta-python">&ge; 3.9</dd></div>
+        <div>
+          <dt>Source</dt>
+          <dd>
+            <a id="repo-link" href="https://github.com/jpeckenpaugh/nexttext"
+               target="_blank" rel="noopener">github.com/jpeckenpaugh/nexttext</a>
+          </dd>
+        </div>
+      </dl>
+      <p class="hint">
+        Loaded from <code id="source-ref-label">main</code> at runtime; the demo
+        always reflects the current sources on that ref.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>nexttext &middot; MIT licensed</span>
+      <span>
+        <a href="https://github.com/jpeckenpaugh/nexttext" target="_blank" rel="noopener">GitHub</a>
+        &middot;
+        <a href="https://github.com/jpeckenpaugh/nexttext/blob/main/README.md" target="_blank" rel="noopener">README</a>
+      </span>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
