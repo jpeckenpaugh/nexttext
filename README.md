@@ -87,3 +87,4 @@ Please open an [issue](https://github.com/yourname/nexttext/issues) or a [pull r
 ## 📄 License
 
 `nexttext` is open-source software released under the [MIT License](LICENSE).
+
