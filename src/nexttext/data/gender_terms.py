@@ -36,8 +36,6 @@ GENDER_MAP: dict[str, str] = {
     "she is": "they are",
     "he and she": "they",
     "she and he": "they",
-    "his and her": "their",
-    "her and his": "their",
 
     "girl": "child",
     "men": "people",

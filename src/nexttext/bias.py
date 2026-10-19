@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import List
+from typing import Iterable, List, Optional, Set
 
 from nexttext.data.associative_terms import (
     FEMALE_ASSOCIATED_KEYWORDS,
@@ -18,61 +18,164 @@ from nexttext.data.gender_terms import (
 
 CONTEXTUAL_KEYWORDS = MALE_ASSOCIATED_KEYWORDS.union(FEMALE_ASSOCIATED_KEYWORDS)
 
-
-# 1. Create the expanded map with all case variations.
-expanded_map = {}
-for k, v in GENDER_MAP.items():
-    expanded_map[k.lower()] = v.lower()
-    expanded_map[k.title()] = v.title()
-    expanded_map[k.upper()] = v.upper()
-
-# 2. Create a list of keys from the map.
-all_keys = list(expanded_map.keys())
-
-# 3. Sort ONLY THE LIST of keys to ensure longest-match priority.
-all_keys.sort(key=len, reverse=True)
-
-# 4. Build the master regex from the sorted list.
-gendered_pattern = re.compile(
-    r"\b(" + "|".join(re.escape(key) for key in all_keys) + r")\b"
+_OBJECT_FOLLOWERS = frozenset(
+    {
+        "about",
+        "after",
+        "again",
+        "against",
+        "along",
+        "already",
+        "always",
+        "and",
+        "around",
+        "as",
+        "at",
+        "before",
+        "behind",
+        "below",
+        "beneath",
+        "beside",
+        "between",
+        "beyond",
+        "but",
+        "by",
+        "despite",
+        "down",
+        "during",
+        "ever",
+        "except",
+        "for",
+        "from",
+        "here",
+        "in",
+        "inside",
+        "into",
+        "just",
+        "later",
+        "like",
+        "near",
+        "never",
+        "nor",
+        "now",
+        "of",
+        "off",
+        "often",
+        "on",
+        "once",
+        "onto",
+        "only",
+        "or",
+        "outside",
+        "over",
+        "past",
+        "really",
+        "since",
+        "so",
+        "sometimes",
+        "soon",
+        "still",
+        "than",
+        "then",
+        "there",
+        "through",
+        "throughout",
+        "till",
+        "to",
+        "today",
+        "tomorrow",
+        "too",
+        "toward",
+        "towards",
+        "under",
+        "underneath",
+        "until",
+        "up",
+        "upon",
+        "very",
+        "with",
+        "within",
+        "without",
+        "yesterday",
+        "yet",
+    }
 )
 
-def debias(labels: List[str]) -> List[str]:
+_TERM_LOOKUP = {
+    term.lower(): replacement for term, replacement in GENDER_MAP.items()
+}
+_SORTED_TERMS = sorted(_TERM_LOOKUP, key=len, reverse=True)
+_GENDERED_PATTERN = re.compile(
+    r"\b(?:" + "|".join(re.escape(term) for term in _SORTED_TERMS) + r")\b",
+    flags=re.IGNORECASE,
+)
+_FOLLOWING_WORD_PATTERN = re.compile(r"\s+([A-Za-z][A-Za-z'-]*)")
+
+
+def debias(
+    labels: List[str],
+    *,
+    proper_nouns: Optional[Iterable[str]] = None,
+) -> List[str]:
+    """Neutralize gendered nouns, pronouns, and contractions.
+
+    Terms are matched case-insensitively with longest-match priority, so
+    phrases such as ``"a boy and a girl"`` are rewritten before their
+    individual words. The casing of each match is preserved: all-lowercase,
+    all-uppercase, and title-case inputs keep their shape, while mixed-case
+    inputs such as ``"WoMan"`` use the capitalized replacement (``"Person"``).
+
+    ``her`` is treated as a possessive determiner when it is followed by a
+    word that can begin a noun phrase (for example, ``"her patient"`` becomes
+    ``"their patient"``). Otherwise it is treated as an object pronoun
+    (``"told her"`` becomes ``"told them"``). This is a lexical heuristic,
+    not part-of-speech tagging.
+
+    Args:
+        labels: Strings that may contain gendered terms.
+        proper_nouns: Optional exact, case-sensitive spellings that must be
+            left untouched. Use this to protect names such as ``"Man Ray"``
+            from being rewritten as ``"Person Ray"``.
+
+    Returns:
+        A new list with gendered terms replaced by neutral alternatives.
     """
-    Neutralize gendered language using a single, pre-compiled regex built
-    from sorted keys for maximum performance and accuracy.
-    """
+
     if not labels:
         return []
 
-    normalized_labels: List[str] = []
-    for label in labels:
-        # The lambda performs a fast lookup in the unsorted map
-        # using the correctly-prioritized key found by the regex.
-        updated_label = gendered_pattern.sub(
-            lambda match: expanded_map[match.group(0)], 
-            label
-        )
-        normalized_labels.append(updated_label)
-        
-    return normalized_labels
+    excluded = _normalize_proper_nouns(proper_nouns)
+
+    def replace(match: re.Match[str]) -> str:
+        original = match.group(0)
+        if original in excluded:
+            return original
+
+        key = original.lower()
+        replacement = _TERM_LOOKUP[key]
+        if key == "her" and _is_possessive_her(match.string, match.end()):
+            replacement = "their"
+        return _apply_casing(replacement, original)
+
+    return [_GENDERED_PATTERN.sub(replace, label) for label in labels]
+
 
 def rebias(labels: List[str], strategy: str = "default") -> List[str]:
     """Reintroduce gendered language into a list of labels.
 
     Args:
-        labels (List[str]): Strings containing neutral language that should be
-            mapped back to gendered terms.
-        strategy (str): Controls how the rebiasing occurs. When ``"default"``,
-            the neutral-to-masculine map is used for every label. When
+        labels: Strings containing neutral language that should be mapped back
+            to gendered terms.
+        strategy: Controls how the rebiasing occurs. When ``"default"``, the
+            neutral-to-masculine map is used for every label. When
             ``"contextual"``, the associative keyword sets
             (:data:`MALE_ASSOCIATED_KEYWORDS`, :data:`FEMALE_ASSOCIATED_KEYWORDS`)
             inform which gendered map to apply by delegating to
             :func:`get_dominant_gender_from_text`.
 
     Returns:
-        List[str]: Strings where neutral terms have been replaced with their
-        gendered counterparts from :data:`REVERSE_GENDER_MAP` or
+        Strings where neutral terms have been replaced with their gendered
+        counterparts from :data:`REVERSE_GENDER_MAP` or
         :data:`FEMALE_REVERSE_GENDER_MAP` depending on ``strategy``.
 
     Raises:
@@ -104,7 +207,9 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
             pattern = rf"\b{re.escape(neutral_term)}\b"
             updated_label = re.sub(
                 pattern,
-                lambda match, replacement=gendered_term: _apply_casing(replacement, match.group(0)),
+                lambda match, replacement=gendered_term: _apply_casing(
+                    replacement, match.group(0)
+                ),
                 updated_label,
                 flags=re.IGNORECASE,
             )
@@ -112,16 +217,30 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
     return rebiased_labels
 
 
+def _normalize_proper_nouns(proper_nouns: Optional[Iterable[str]]) -> Set[str]:
+    """Return a set of exact spellings that must not be rewritten."""
+
+    if proper_nouns is None:
+        return set()
+    if isinstance(proper_nouns, str):
+        return {proper_nouns}
+    return set(proper_nouns)
+
+
+def _is_possessive_her(text: str, end: int) -> bool:
+    """Return whether ``her`` ending at ``end`` is used as a determiner."""
+
+    following = _FOLLOWING_WORD_PATTERN.match(text, end)
+    if following is None:
+        return False
+    return following.group(1).lower() not in _OBJECT_FOLLOWERS
+
+
 def _apply_casing(replacement: str, original: str) -> str:
-    """
-    Return ``replacement`` with casing that mirrors ``original``, optimized
-    for the most common use cases in natural language text.
-    """
+    """Return ``replacement`` with casing that mirrors ``original``."""
 
     if original.islower():
         return replacement
-
-    if original.istitle():
-        return replacement.capitalize()
-
-    return replacement.upper()
+    if original.isupper():
+        return replacement.upper()
+    return replacement[:1].upper() + replacement[1:]

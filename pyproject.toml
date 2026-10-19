@@ -1,23 +1,60 @@
 [build-system]
-requires = ["hatchling>=1.18"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
 name = "nexttext"
 version = "0.1.0"
-description = "Utilities for experimenting with simple text processing routines."
+description = "Zero-dependency heuristic tools for neutralizing and re-introducing gendered language in text."
 authors = [
   { name = "NextText Maintainers" }
 ]
+license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
+keywords = ["nlp", "bias", "debiasing", "text-processing"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Text Processing :: Linguistic",
+]
+
+[project.urls]
+Homepage = "https://github.com/jpeckenpaugh/nexttext"
+Repository = "https://github.com/jpeckenpaugh/nexttext"
+Issues = "https://github.com/jpeckenpaugh/nexttext/issues"
+Changelog = "https://github.com/jpeckenpaugh/nexttext/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "build>=1.2", "twine>=5"]
+benchmark = ["datasets>=2.0", "language-tool-python>=2.7"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nexttext"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/nexttext",
+  "/tests",
+  "/tools/benchmark_coco.py",
+  "/README.md",
+  "/LICENSE",
+  "/CHANGELOG.md",
+  "/pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
 pythonpath = ["src"]
-
