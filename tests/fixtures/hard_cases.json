@@ -1,0 +1,27 @@
+{
+  "provenance": {
+    "dataset": "hand-authored diagnostic set",
+    "selection": "targeted hard cases for possessive/object her and subject-verb agreement",
+    "authored_at": "2026-10-20",
+    "license": "same as repository (MIT)",
+    "notes": "Not a random sample and not COCO; used only to isolate known hard cases."
+  },
+  "captions": [
+    "She runs to her house.",
+    "He performs a skateboard trick.",
+    "He does not run to her house.",
+    "She has a car and her keys.",
+    "He was happy about the result.",
+    "He quickly runs home.",
+    "He took her hand.",
+    "He told her a story.",
+    "She watches birds in the park.",
+    "He goes home after work.",
+    "She studies hard every night.",
+    "He doesn't run very fast.",
+    "She isn't here today.",
+    "He never eats breakfast.",
+    "She usually walks to work.",
+    "He always forgets his keys."
+  ]
+}

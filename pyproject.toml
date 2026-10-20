@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nexttext"
-version = "0.2.0"
+version = "0.3.0"
 description = "Zero-dependency heuristic tools for neutralizing and re-introducing gendered language in text."
 authors = [
   { name = "NextText Maintainers" }
@@ -36,6 +36,9 @@ Repository = "https://github.com/jpeckenpaugh/nexttext"
 Issues = "https://github.com/jpeckenpaugh/nexttext/issues"
 Changelog = "https://github.com/jpeckenpaugh/nexttext/blob/main/CHANGELOG.md"
 
+[project.scripts]
+nexttext = "nexttext.cli:main"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=7.0",
@@ -44,8 +47,15 @@ dev = [
   "twine>=5",
   "ruff>=0.6",
   "mypy>=1.11",
+  "hypothesis>=6.0",
+  "pandas>=1.5",
+  "PyYAML>=6",
 ]
 benchmark = ["datasets>=2.0", "language-tool-python>=2.7"]
+nlp = ["spacy>=3.4"]
+yaml = ["PyYAML>=6"]
+pandas = ["pandas>=1.5"]
+hf = ["datasets>=2.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nexttext"]
@@ -54,7 +64,8 @@ packages = ["src/nexttext"]
 include = [
   "/src/nexttext",
   "/tests",
-  "/tools/benchmark_coco.py",
+  "/tools",
+  "/docs",
   "/README.md",
   "/LICENSE",
   "/CHANGELOG.md",
@@ -83,6 +94,10 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["pandas", "pandas.*", "yaml", "spacy", "spacy.*"]
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["nexttext"]
