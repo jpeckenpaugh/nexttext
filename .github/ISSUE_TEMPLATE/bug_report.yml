@@ -1,0 +1,95 @@
+name: Bug report
+description: Report a reproducible problem with nexttext.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please search existing
+        issues first and remove secrets or private text from logs and samples.
+
+        For security vulnerabilities, do not use this form. Follow
+        [SECURITY.md](https://github.com/jpeckenpaugh/nexttext/blob/main/SECURITY.md).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the smallest code or command that reproduces the problem.
+      placeholder: |
+        import nexttext
+        print(nexttext.debias(["A man helped her."]))
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the full traceback if one was raised.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: nexttext version
+      description: Output of `python -c "import nexttext; print(nexttext.__version__)"`.
+      placeholder: 0.3.0
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python --version`.
+      placeholder: 3.12.4
+    validations:
+      required: true
+  - type: dropdown
+    id: strategy
+    attributes:
+      label: Strategy
+      description: Which strategy were you using?
+      multiple: true
+      options:
+        - default
+        - contextual
+        - nlp
+        - custom
+        - not applicable
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04, macOS 15, Windows 11
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Relevant lexicon, input sample, or recent changes.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I removed secrets and private data from this report.
+          required: true
+        - label: This is not a security vulnerability (see SECURITY.md).
+          required: true
