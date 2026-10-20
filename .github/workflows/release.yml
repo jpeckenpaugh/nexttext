@@ -66,6 +66,8 @@ jobs:
     environment: testpypi
     permissions:
       id-token: write
+    outputs:
+      published: ${{ steps.credentials.outputs.configured }}
     steps:
       - name: Download distributions
         uses: actions/download-artifact@v4
@@ -96,7 +98,7 @@ jobs:
   smoke-testpypi:
     name: Clean-install TestPyPI smoke
     needs: [build, publish-testpypi]
-    if: always() && needs.build.result == 'success' && needs.publish-testpypi.result == 'success'
+    if: always() && needs.build.result == 'success' && needs.publish-testpypi.outputs.published == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
@@ -128,12 +130,14 @@ jobs:
     if: |
       always() &&
       needs.build.result == 'success' &&
-      needs.publish-testpypi.result == 'success' &&
+      needs.publish-testpypi.outputs.published == 'true' &&
       (github.event_name == 'push' || inputs.publish_to_pypi == true)
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
       id-token: write
+    outputs:
+      published: ${{ steps.credentials.outputs.configured }}
     steps:
       - name: Download distributions
         uses: actions/download-artifact@v4
@@ -162,7 +166,7 @@ jobs:
   smoke-pypi:
     name: Clean-install PyPI smoke
     needs: [build, publish-pypi]
-    if: always() && needs.build.result == 'success' && needs.publish-pypi.result == 'success'
+    if: always() && needs.build.result == 'success' && needs.publish-pypi.outputs.published == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
