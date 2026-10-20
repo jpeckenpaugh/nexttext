@@ -205,11 +205,15 @@ def rebias(labels: List[str], strategy: str = "default") -> List[str]:
 
         for neutral_term, gendered_term in mapping.items():
             pattern = rf"\b{re.escape(neutral_term)}\b"
+
+            def replace(
+                match: re.Match[str], replacement: str = gendered_term
+            ) -> str:
+                return _apply_casing(replacement, match.group(0))
+
             updated_label = re.sub(
                 pattern,
-                lambda match, replacement=gendered_term: _apply_casing(
-                    replacement, match.group(0)
-                ),
+                replace,
                 updated_label,
                 flags=re.IGNORECASE,
             )

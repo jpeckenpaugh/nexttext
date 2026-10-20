@@ -1,0 +1,199 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish_to_pypi:
+        description: After TestPyPI succeeds, also publish to PyPI
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Check distributions
+        run: python -m twine check dist/*
+
+      - name: Determine version
+        id: version
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          from pathlib import Path
+
+          wheel = next(Path("dist").glob("*.whl"))
+          print(f"version={wheel.name.split('-')[1]}")
+          PY
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Check TestPyPI credentials
+        id: credentials
+        env:
+          TEST_PYPI_API_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          if [ -n "$TEST_PYPI_API_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=TestPyPI publish skipped::TEST_PYPI_API_TOKEN is not configured. Supply it through the Paperclip secret-proposal flow, then re-run this workflow."
+          fi
+
+      - name: Publish to TestPyPI
+        if: steps.credentials.outputs.configured == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+
+  smoke-testpypi:
+    name: Clean-install TestPyPI smoke
+    needs: [build, publish-testpypi]
+    if: always() && needs.build.result == 'success' && needs.publish-testpypi.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install from TestPyPI in a clean environment
+        run: |
+          python -m venv "${RUNNER_TEMP}/venv-testpypi"
+          "${RUNNER_TEMP}/venv-testpypi/bin/python" -m pip install --upgrade pip
+          "${RUNNER_TEMP}/venv-testpypi/bin/pip" install \
+            --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            "nexttext==${{ needs.build.outputs.version }}"
+
+      - name: Import and exercise the installed package
+        run: |
+          "${RUNNER_TEMP}/venv-testpypi/bin/python" - <<'PY'
+          import nexttext
+
+          assert nexttext.debias(["A man helped her."]) == ["A person helped them."]
+          print("nexttext", nexttext.__all__)
+          PY
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [build, publish-testpypi]
+    if: |
+      always() &&
+      needs.build.result == 'success' &&
+      needs.publish-testpypi.result == 'success' &&
+      (github.event_name == 'push' || inputs.publish_to_pypi == true)
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Check PyPI credentials
+        id: credentials
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -n "$PYPI_API_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=PyPI publish skipped::PYPI_API_TOKEN is not configured. Supply it through the Paperclip secret-proposal flow, then re-run this workflow."
+          fi
+
+      - name: Publish to PyPI
+        if: steps.credentials.outputs.configured == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  smoke-pypi:
+    name: Clean-install PyPI smoke
+    needs: [build, publish-pypi]
+    if: always() && needs.build.result == 'success' && needs.publish-pypi.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Confirm the release exists on PyPI
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+
+          version = "${{ needs.build.outputs.version }}"
+          with urllib.request.urlopen("https://pypi.org/pypi/nexttext/json") as response:
+              data = json.load(response)
+          assert version in data["releases"], f"{version} missing from PyPI releases"
+          print(f"PyPI reports nexttext {version}")
+          PY
+
+      - name: Install from PyPI in a clean environment
+        run: |
+          python -m venv "${RUNNER_TEMP}/venv-pypi"
+          "${RUNNER_TEMP}/venv-pypi/bin/python" -m pip install --upgrade pip
+          "${RUNNER_TEMP}/venv-pypi/bin/pip" install "nexttext==${{ needs.build.outputs.version }}"
+
+      - name: Import and exercise the installed package
+        run: |
+          "${RUNNER_TEMP}/venv-pypi/bin/python" - <<'PY'
+          import nexttext
+
+          assert nexttext.debias(["A man helped her."]) == ["A person helped them."]
+          print("nexttext", nexttext.__all__)
+          PY

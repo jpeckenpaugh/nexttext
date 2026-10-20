@@ -13,6 +13,7 @@ LanguageTool also requires Java.
 """
 
 import json
+import sys
 import time
 
 import datasets as ds
@@ -43,9 +44,9 @@ if __name__ == "__main__":
     try:
         tool = language_tool_python.LanguageTool('en-US')
     except Exception as e:
-        print(f"Error initializing LanguageTool. Please ensure Java is installed.")
+        print("Error initializing LanguageTool. Please ensure Java is installed.")
         print(f"Error: {e}")
-        exit()
+        sys.exit(1)
         
     # 2. Load and Filter Dataset
     print(f"Streaming dataset and filtering for {SAMPLE_SIZE} person-related captions...")

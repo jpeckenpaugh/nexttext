@@ -1,5 +1,9 @@
 # nexttext
 
+[![CI](https://github.com/jpeckenpaugh/nexttext/actions/workflows/ci.yml/badge.svg)](https://github.com/jpeckenpaugh/nexttext/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jpeckenpaugh/nexttext/badges/coverage.json)](https://github.com/jpeckenpaugh/nexttext/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jpeckenpaugh/nexttext/badges/python-support.json)](https://github.com/jpeckenpaugh/nexttext/actions/workflows/ci.yml)
+
 ## Take your text to the next level.
 
 `nexttext` is a lightweight, zero-runtime-dependency Python toolkit for
@@ -49,6 +53,14 @@ For development and tests:
 ```bash
 pip install -e ".[dev]"
 ```
+
+### Quality gates
+
+Every push and pull request runs the same suite on Python 3.9 through 3.13:
+`pytest` with coverage, `ruff check`, `mypy`, `python -m build`, and
+`twine check`. The [`ci.yml`](.github/workflows/ci.yml) workflow is the source
+of the CI and Python-support badges; the coverage badge is regenerated from the
+real coverage report on each push to `main`.
 
 ---
 

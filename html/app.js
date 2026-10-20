@@ -3,7 +3,8 @@
 const CONFIG = {
   pyodideVersion: "0.27.2",
   repo: "jpeckenpaugh/nexttext",
-  sourceRef: "main",
+  sourceRef: "v0.2.0",
+  pinnedVersion: "0.2.0",
 };
 
 const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${CONFIG.pyodideVersion}/full/`;
@@ -55,10 +56,32 @@ const SCENARIOS = [
 ];
 
 const BRIDGE_SOURCE = `
+import difflib
 import json
+import re
 
 from nexttext import debias, rebias, normalize_whitespace, word_frequencies
 from nexttext.data.associative_terms import get_dominant_gender_from_text
+
+_TOKEN_PATTERN = re.compile(r"\S+\s*")
+
+
+def _diff_label(before, after):
+    before_tokens = _TOKEN_PATTERN.findall(before)
+    after_tokens = _TOKEN_PATTERN.findall(after)
+    matcher = difflib.SequenceMatcher(a=before_tokens, b=after_tokens, autojunk=False)
+    changes = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        changes.append(
+            {
+                "op": tag,
+                "before": "".join(before_tokens[i1:i2]).strip(),
+                "after": "".join(after_tokens[j1:j2]).strip(),
+            }
+        )
+    return {"before": before, "after": after, "changes": changes}
 
 
 def _demo_run(request_json):
@@ -85,7 +108,11 @@ def _demo_run(request_json):
     else:
         raise ValueError("unknown operation: %s" % op)
 
-    return json.dumps({"output": output, "diagnostics": diagnostics})
+    diffs = []
+    if op in {"debias", "rebias_default", "rebias_contextual", "round_trip"}:
+        diffs = [_diff_label(before, after) for before, after in zip(labels, output)]
+
+    return json.dumps({"output": output, "diffs": diffs, "diagnostics": diagnostics})
 `;
 
 const els = {
@@ -97,6 +124,7 @@ const els = {
   operation: document.getElementById("operation"),
   runButton: document.getElementById("run-button"),
   output: document.getElementById("output"),
+  diffOutput: document.getElementById("diff-output"),
   diagnostics: document.getElementById("diagnostics"),
   repoLink: document.getElementById("repo-link"),
   version: document.getElementById("meta-version"),
@@ -167,16 +195,69 @@ async function initPyodide() {
   pyodide.runPython(BRIDGE_SOURCE);
   demoRun = pyodide.globals.get("_demo_run");
 
-  setStatus("ready", `Ready \u2014 loaded from ${CONFIG.sourceRef}`);
+  setStatus("ready", `Ready \u2014 pinned release ${CONFIG.sourceRef}`);
   els.runButton.disabled = false;
 }
 
-function renderOutput(result) {
-  const { output, diagnostics } = result;
-  if (Array.isArray(output) && output.every((item) => typeof item === "string")) {
-    els.output.textContent = output.join("\n") || "(no output)";
+function renderDiff(diff) {
+  const card = document.createElement("div");
+  card.className = "diff-card";
+
+  const before = document.createElement("div");
+  before.className = "diff-row diff-before";
+  const beforeTag = document.createElement("span");
+  beforeTag.className = "diff-tag";
+  beforeTag.textContent = "before";
+  const beforeText = document.createElement("code");
+  beforeText.textContent = diff.before;
+  before.append(beforeTag, beforeText);
+
+  const after = document.createElement("div");
+  after.className = "diff-row diff-after";
+  const afterTag = document.createElement("span");
+  afterTag.className = "diff-tag";
+  afterTag.textContent = "after";
+  const afterText = document.createElement("code");
+  afterText.textContent = diff.after;
+  after.append(afterTag, afterText);
+
+  card.append(before, after);
+
+  const rules = document.createElement("div");
+  rules.className = "diff-rules";
+  if (diff.changes.length === 0) {
+    const unchanged = document.createElement("span");
+    unchanged.className = "diff-rule diff-rule--unchanged";
+    unchanged.textContent = "no rule fired";
+    rules.append(unchanged);
   } else {
-    els.output.textContent = JSON.stringify(output, null, 2);
+    diff.changes.forEach((change) => {
+      const rule = document.createElement("span");
+      rule.className = "diff-rule";
+      const from = change.before || "(nothing)";
+      const to = change.after || "(removed)";
+      rule.textContent = `${from} \u2192 ${to}`;
+      rules.append(rule);
+    });
+  }
+  card.append(rules);
+  return card;
+}
+
+function renderOutput(result) {
+  const { output, diagnostics, diffs } = result;
+  if (Array.isArray(diffs) && diffs.length > 0) {
+    els.output.hidden = true;
+    els.diffOutput.hidden = false;
+    els.diffOutput.replaceChildren(...diffs.map(renderDiff));
+  } else {
+    els.diffOutput.hidden = true;
+    els.output.hidden = false;
+    if (Array.isArray(output) && output.every((item) => typeof item === "string")) {
+      els.output.textContent = output.join("\n") || "(no output)";
+    } else {
+      els.output.textContent = JSON.stringify(output, null, 2);
+    }
   }
 
   const genders = diagnostics && diagnostics.gender;
@@ -185,6 +266,8 @@ function renderOutput(result) {
 }
 
 function showError(error) {
+  els.diffOutput.hidden = true;
+  els.output.hidden = false;
   els.output.textContent = String(error && error.message ? error.message : error);
   els.output.classList.add("has-error");
   els.diagnostics.textContent = "";
@@ -246,6 +329,8 @@ function selectScenario(id) {
   if (demoRun) {
     runPlayground();
   } else {
+    els.diffOutput.hidden = true;
+    els.output.hidden = false;
     els.output.textContent = "Waiting for the Python runtime to finish loading\u2026";
   }
 }
@@ -262,6 +347,7 @@ function handleSubmit(event) {
 function init() {
   els.repoLink.href = `https://github.com/${CONFIG.repo}`;
   els.sourceRefLabel.textContent = CONFIG.sourceRef;
+  els.version.textContent = CONFIG.pinnedVersion;
   buildScenarioCards();
   els.form.addEventListener("submit", handleSubmit);
 
