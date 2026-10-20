@@ -250,6 +250,43 @@ def rebias(
     return [selected.rebias(label, resolved) for label in labels]
 
 
+def inject_bias(
+    labels: List[str],
+    strategy: str = "default",
+    *,
+    lexicon: Optional[LexiconSource] = None,
+    locale: str = DEFAULT_LOCALE,
+) -> List[str]:
+    """Generate controlled gendered variants of neutral text for testing.
+
+    ``inject_bias`` is the explicit, test-oriented public name for
+    :func:`rebias`.  The two functions share the same implementation and
+    arguments; ``rebias`` remains available as the backward-compatible name.
+
+    Bias injection is intended for robustness testing, red-teaming, and
+    demonstrations.  It must not be used to create deceptive or high-stakes
+    content.  See the misuse and safety notes in the project documentation.
+
+    Args:
+        labels: Neutral strings that should receive controlled gendered terms.
+        strategy: Registered strategy name.  ``"default"`` applies the
+            masculine reverse map; ``"contextual"`` selects a gendered map
+            from associative keywords; ``"nlp"`` adds agreement handling and
+            falls back to ``"contextual"`` when spaCy is unavailable.
+        lexicon: Optional custom lexicon source; see :func:`debias`.
+        locale: Built-in locale to use when ``lexicon`` is not provided.
+
+    Returns:
+        Strings where neutral terms have been replaced with gendered
+        counterparts from the selected reverse map.
+
+    Raises:
+        ValueError: If ``strategy`` is unknown or the lexicon is malformed.
+    """
+
+    return rebias(labels, strategy=strategy, lexicon=lexicon, locale=locale)
+
+
 def _build_result(
     label: str,
     strategy: Strategy,
@@ -433,6 +470,36 @@ def _nlp_rebias(text: str, lexicon: Lexicon) -> str:
         return _contextual_rebias(text, lexicon)
 
 
+def _semantic_debias(
+    text: str,
+    lexicon: Lexicon,
+    excluded: FrozenSet[str],
+) -> RewriteOutcome:
+    """Use the experimental embedding-assisted backend, with fallbacks."""
+
+    from nexttext import semantic
+
+    if not semantic.available():
+        return _nlp_debias(text, lexicon, excluded)
+    try:
+        return semantic.debias_text(text, lexicon, excluded)
+    except semantic.SemanticUnavailable:  # pragma: no cover - availability race
+        return _nlp_debias(text, lexicon, excluded)
+
+
+def _semantic_rebias(text: str, lexicon: Lexicon) -> str:
+    """Use the experimental backend for rebiasing, with existing fallbacks."""
+
+    from nexttext import semantic
+
+    if not semantic.available():
+        return _nlp_rebias(text, lexicon)
+    try:
+        return semantic.rebias_text(text, lexicon)
+    except semantic.SemanticUnavailable:  # pragma: no cover - availability race
+        return _nlp_rebias(text, lexicon)
+
+
 def _normalize_proper_nouns(proper_nouns: Optional[Iterable[str]]) -> FrozenSet[str]:
     """Return a set of exact spellings that must not be rewritten."""
 
@@ -509,6 +576,17 @@ def _register_builtin_strategies() -> None:
             description="Optional spaCy POS/dependency strategy.",
         )
     )
+    register_strategy(
+        Strategy(
+            name="semantic",
+            debias=_semantic_debias,
+            rebias=_semantic_rebias,
+            description=(
+                "Experimental embedding-assisted rewrite selection; requires "
+                "the optional semantic extra."
+            ),
+        )
+    )
 
 
 _register_builtin_strategies()
@@ -517,6 +595,7 @@ _register_builtin_strategies()
 __all__ = [
     "debias",
     "rebias",
+    "inject_bias",
     "available_strategies",
     "DebiasResult",
     "RuleHit",

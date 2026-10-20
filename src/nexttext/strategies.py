@@ -10,6 +10,10 @@ The built-in strategies are registered by :mod:`nexttext.bias`:
 ``nlp``
     Optional spaCy-backed POS/dependency rewriting.  It falls back to the
     lexical path when spaCy or the English model is unavailable.
+``semantic``
+    Experimental embedding-assisted rewrite selection behind the optional
+    ``nexttext[semantic]`` extra.  It falls back to ``nlp`` when the embedding
+    model is unavailable and is not part of the default path.
 
 Third parties can add strategies with :func:`register_strategy`.
 """

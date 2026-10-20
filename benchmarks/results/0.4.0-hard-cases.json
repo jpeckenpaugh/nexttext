@@ -1,0 +1,140 @@
+{
+  "schema": "nexttext.benchmark.v1",
+  "nexttext_version": "0.4.0",
+  "generated_at": "2026-10-20T01:30:05.628593+00:00",
+  "provenance": {
+    "dataset": "hand-authored diagnostic set",
+    "selection": "targeted hard cases for possessive/object her and subject-verb agreement",
+    "authored_at": "2026-10-20",
+    "license": "same as repository (MIT)",
+    "notes": "Not a random sample and not COCO; used only to isolate known hard cases.",
+    "source": "tests/fixtures/hard_cases.json",
+    "evaluated_size": 16
+  },
+  "sample_size": 16,
+  "grammar_backend": {
+    "backend": "local",
+    "language": "en-US",
+    "version": null
+  },
+  "similarity_backend": {
+    "backend": "fastembed",
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fastembed_version": "0.9.0"
+  },
+  "measurement": {
+    "warmup_captions": 5,
+    "timing": "rewrite wall-clock after warm-up",
+    "determinism": "SHA-256 of newline-joined outputs"
+  },
+  "strategies": {
+    "default": {
+      "strategy": "default",
+      "changed_captions": 16,
+      "changed_rate": 1.0,
+      "baseline_captions_with_errors": 0,
+      "baseline_error_rate": 0.0,
+      "introduced_captions": 14,
+      "introduced_error_rate": 0.875,
+      "introduced_errors": 14,
+      "resolved_errors": 0,
+      "net_error_change": 14,
+      "grammar_checked": true,
+      "rewrite_seconds": 0.003928432008251548,
+      "milliseconds_per_caption": 0.24552700051572174,
+      "outputs_sha256": "a1a2158f08aad64a2f483faa7ab33cab3d2f24725d127c8518bcf982e495b122",
+      "examples": [
+        {
+          "index": 0,
+          "original": "She runs to her house.",
+          "rewritten": "They runs to their house.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 1,
+          "original": "He performs a skateboard trick.",
+          "rewritten": "They performs a skateboard trick.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 2,
+          "original": "He does not run to her house.",
+          "rewritten": "They does not run to their house.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 3,
+          "original": "She has a car and her keys.",
+          "rewritten": "They has a car and their keys.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 4,
+          "original": "He was happy about the result.",
+          "rewritten": "They was happy about the result.",
+          "errors_before": 0,
+          "errors_after": 1
+        }
+      ],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.7362990038406424,
+        "min": 0.6226253931878557,
+        "max": 0.8629668214227382
+      }
+    },
+    "nlp": {
+      "strategy": "nlp",
+      "changed_captions": 16,
+      "changed_rate": 1.0,
+      "baseline_captions_with_errors": 0,
+      "baseline_error_rate": 0.0,
+      "introduced_captions": 0,
+      "introduced_error_rate": 0.0,
+      "introduced_errors": 0,
+      "resolved_errors": 0,
+      "net_error_change": 0,
+      "grammar_checked": true,
+      "rewrite_seconds": 0.02164733299287036,
+      "milliseconds_per_caption": 1.3529583120543975,
+      "outputs_sha256": "20a9daddbf2b7ca7c3e91210b07b892d414706a169d07ba653f5c48108eae088",
+      "examples": [],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.7326740639806071,
+        "min": 0.6145447893195367,
+        "max": 0.854284863799379
+      }
+    },
+    "semantic": {
+      "strategy": "semantic",
+      "changed_captions": 16,
+      "changed_rate": 1.0,
+      "baseline_captions_with_errors": 0,
+      "baseline_error_rate": 0.0,
+      "introduced_captions": 0,
+      "introduced_error_rate": 0.0,
+      "introduced_errors": 0,
+      "resolved_errors": 0,
+      "net_error_change": 0,
+      "grammar_checked": true,
+      "rewrite_seconds": 0.022842920967377722,
+      "milliseconds_per_caption": 1.4276825604611076,
+      "outputs_sha256": "20a9daddbf2b7ca7c3e91210b07b892d414706a169d07ba653f5c48108eae088",
+      "examples": [],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.7326740639806071,
+        "min": 0.6145447893195367,
+        "max": 0.854284863799379
+      }
+    }
+  }
+}

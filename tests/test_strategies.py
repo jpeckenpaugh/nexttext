@@ -10,9 +10,9 @@ from nexttext.strategies import Strategy, available_strategies, register_strateg
 
 
 def test_builtin_strategies_are_registered():
-    """The public registry should expose the three documented strategies."""
+    """The public registry should expose every built-in strategy."""
 
-    assert {"default", "contextual", "nlp"}.issubset(
+    assert {"default", "contextual", "nlp", "semantic"}.issubset(
         set(available_strategies())
     )
 
@@ -118,3 +118,14 @@ def test_nlp_available_helper_is_lazy(monkeypatch):
         assert nexttext.nlp_available() is False
     finally:
         nlp.reset_model()
+
+
+def test_semantic_strategy_falls_back_without_embedding_model(monkeypatch):
+    """The experimental strategy must fall back when fastembed is unavailable."""
+
+    import nexttext.semantic as semantic
+
+    monkeypatch.setattr(semantic, "available", lambda: False)
+    expected = bias.debias(["He runs to her house."], strategy="nlp")
+    assert bias.debias(["He runs to her house."], strategy="semantic") == expected
+    assert nexttext.semantic_available() is False

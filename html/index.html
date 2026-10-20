@@ -7,7 +7,7 @@
   <title>nexttext &mdash; live demo</title>
   <meta
     name="description"
-    content="Interactive in-browser demo of nexttext, a lightweight toolkit for neutralizing and re-framing gendered language."
+    content="Interactive in-browser demo of nexttext, a lightweight toolkit for neutralizing text and generating controlled bias for testing AI pipelines."
   />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,9 +16,9 @@
     <div class="wrap">
       <h1>nexttext <span class="tag">live demo</span></h1>
       <p class="lede">
-        Take your text to the next level. Neutralize and re-frame text to reduce
-        hidden skew in AI pipelines &mdash; running entirely in your browser via
-        <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a>.
+        A lightweight toolkit for neutralizing text and generating controlled
+        bias for testing AI pipelines &mdash; running entirely in your browser
+        via <a href="https://pyodide.org" target="_blank" rel="noopener">Pyodide</a>.
       </p>
       <div id="runtime-status" class="runtime-status" data-state="loading">
         <span class="spinner" aria-hidden="true"></span>
@@ -51,9 +51,9 @@
             <span class="field-label">Operation</span>
             <select id="operation">
               <option value="debias">debias &mdash; neutralize</option>
-              <option value="rebias_default">rebias &mdash; default (masculine)</option>
-              <option value="rebias_contextual">rebias &mdash; contextual</option>
-              <option value="round_trip">round trip &mdash; debias then contextual rebias</option>
+              <option value="rebias_default">inject_bias &mdash; default (masculine)</option>
+              <option value="rebias_contextual">inject_bias &mdash; contextual</option>
+              <option value="round_trip">round trip &mdash; debias then inject_bias</option>
               <option value="normalize">normalize_whitespace</option>
               <option value="word_frequencies">word_frequencies</option>
             </select>
@@ -75,20 +75,21 @@
     <section class="panel" aria-labelledby="about-heading">
       <h2 id="about-heading">About nexttext</h2>
       <p>
-        <code>nexttext</code> is a lightweight Python toolkit for neutralizing and
-        re-framing text to reduce noise, hidden skew, and unwanted artifacts in AI
-        pipelines. It works equally well on human-annotated training labels and on
-        generated labels from captioning or classification models.
+        <code>nexttext</code> is a lightweight toolkit for neutralizing text and
+        generating controlled bias for testing AI pipelines. It works equally
+        well on human-annotated training labels and on generated labels from
+        captioning or classification models. The default path is small,
+        inspectable, deterministic, and has zero runtime dependencies.
       </p>
       <ul class="feature-list">
         <li><strong>Debias</strong> &mdash; neutralize gendered or stereotypical language automatically.</li>
-        <li><strong>Rebias</strong> &mdash; reintroduce controlled skew for testing and validation.</li>
+        <li><strong>Inject bias</strong> &mdash; <code>inject_bias</code> (alias <code>rebias</code>) reintroduces controlled skew for testing and validation.</li>
         <li>Works for both training data and model outputs.</li>
         <li>Simple API, no heavy dependencies.</li>
         <li>Open source under the MIT license.</li>
       </ul>
       <dl class="meta">
-        <div><dt>Pinned version</dt><dd id="meta-version">0.2.0</dd></div>
+        <div><dt>Pinned version</dt><dd id="meta-version">0.4.0</dd></div>
         <div><dt>License</dt><dd>MIT</dd></div>
         <div><dt>Python</dt><dd id="meta-python">&ge; 3.9</dd></div>
         <div>
@@ -100,10 +101,15 @@
         </div>
       </dl>
       <p class="hint">
-        Sources are pinned to release <code id="source-ref-label">v0.2.0</code>
+        Sources are pinned to release <code id="source-ref-label">v0.4.0</code>
         at runtime, so the demo keeps working even if <code>main</code> is
         temporarily broken. Each result shows the before/after text and the
         rule that fired.
+      </p>
+      <p class="hint">
+        <strong>Safety:</strong> this demo provides no fairness guarantees and is
+        not for deceptive or high-stakes content. Bias injection is for testing
+        only; generated variants are synthetic and should stay labeled as such.
       </p>
     </section>
   </main>

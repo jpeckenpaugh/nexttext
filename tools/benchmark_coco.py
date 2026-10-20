@@ -22,8 +22,12 @@ the public LanguageTool API, or ``--grammar off`` to measure rewrites only.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata
 import json
+import math
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -65,18 +69,32 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     strategies = args.strategy or ["default", "nlp"]
     checker, checker_info = _build_checker(args.grammar)
+    similarity, similarity_info = _build_similarity(
+        args.similarity, args.similarity_model
+    )
     baseline = _check_all(checker, captions)
+    original_vectors = (
+        _embed_all(similarity, captions) if similarity is not None else None
+    )
 
     results: Dict[str, Any] = {}
     for name in strategies:
+        if args.warmup:
+            nexttext.debias(captions[: args.warmup], strategy=name)
         print(f"Evaluating strategy {name!r} on {len(captions)} captions...")
+        started = time.perf_counter()
         rewritten = nexttext.debias(captions, strategy=name)
+        rewrite_seconds = time.perf_counter() - started
         results[name] = _score(
             captions,
             rewritten,
             baseline,
             checker,
             strategy=name,
+            rewrite_seconds=rewrite_seconds,
+            similarity=similarity,
+            original_vectors=original_vectors,
+            similarity_info=similarity_info,
         )
 
     report = {
@@ -86,6 +104,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "provenance": provenance,
         "sample_size": len(captions),
         "grammar_backend": checker_info,
+        "similarity_backend": similarity_info,
+        "measurement": {
+            "warmup_captions": args.warmup,
+            "timing": "rewrite wall-clock after warm-up",
+            "determinism": "SHA-256 of newline-joined outputs",
+        },
         "strategies": results,
     }
 
@@ -157,6 +181,29 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["local", "public", "off"],
         default="local",
         help="LanguageTool backend (default: local)",
+    )
+    parser.add_argument(
+        "--warmup",
+        type=int,
+        default=0,
+        help=(
+            "run each strategy on this many captions before timing "
+            "(default: 0)"
+        ),
+    )
+    parser.add_argument(
+        "--similarity",
+        choices=["fastembed", "off"],
+        default="off",
+        help="optional embedding-similarity metric (default: off)",
+    )
+    parser.add_argument(
+        "--similarity-model",
+        default="sentence-transformers/all-MiniLM-L6-v2",
+        help=(
+            "fastembed model used for the similarity metric "
+            "(default: sentence-transformers/all-MiniLM-L6-v2)"
+        ),
     )
     parser.add_argument(
         "--output",
@@ -322,6 +369,61 @@ def _build_checker(
     return tool, info
 
 
+def _build_similarity(
+    backend: str,
+    model_name: str,
+) -> Tuple[Optional[Any], Dict[str, Any]]:
+    """Create an optional embedding model for semantic-similarity metrics."""
+
+    if backend == "off":
+        return None, {"backend": "off"}
+
+    try:
+        from fastembed import TextEmbedding
+    except ImportError as exc:
+        raise ImportError(
+            "embedding similarity requires the optional fastembed package: "
+            "pip install fastembed"
+        ) from exc
+
+    try:
+        embedder = TextEmbedding(model_name=model_name)
+    except Exception as exc:  # pragma: no cover - model download/runtime
+        raise RuntimeError(
+            f"embedding model {model_name!r} could not be loaded: {exc}"
+        ) from exc
+
+    try:
+        version = importlib.metadata.version("fastembed")
+    except importlib.metadata.PackageNotFoundError:  # pragma: no cover
+        version = "unknown"
+    return embedder, {
+        "backend": "fastembed",
+        "model": model_name,
+        "fastembed_version": version,
+    }
+
+
+def _embed_all(embedder: Any, texts: Sequence[str]) -> List[List[float]]:
+    """Embed every text once so each strategy reuses the original vectors."""
+
+    return [
+        [float(value) for value in vector]
+        for vector in embedder.embed(list(texts))
+    ]
+
+
+def _cosine(left: Sequence[float], right: Sequence[float]) -> float:
+    """Return the cosine similarity of two equal-length vectors."""
+
+    dot = sum(a * b for a, b in zip(left, right))
+    left_norm = math.sqrt(sum(value * value for value in left))
+    right_norm = math.sqrt(sum(value * value for value in right))
+    if left_norm == 0.0 or right_norm == 0.0:
+        return 0.0
+    return dot / (left_norm * right_norm)
+
+
 def _check_all(checker: Optional[Any], texts: Sequence[str]) -> List[int]:
     """Return the LanguageTool match count for each text."""
 
@@ -342,6 +444,10 @@ def _score(
     checker: Optional[Any],
     *,
     strategy: str,
+    rewrite_seconds: float = 0.0,
+    similarity: Optional[Any] = None,
+    original_vectors: Optional[Sequence[Sequence[float]]] = None,
+    similarity_info: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Compare rewritten captions with the original captions."""
 
@@ -374,7 +480,7 @@ def _score(
             resolved_errors += before_count - after_count
 
     size = len(original) or 1
-    return {
+    result = {
         "strategy": strategy,
         "changed_captions": changed_captions,
         "changed_rate": changed_captions / size,
@@ -386,8 +492,37 @@ def _score(
         "resolved_errors": resolved_errors,
         "net_error_change": introduced_errors - resolved_errors,
         "grammar_checked": checker is not None,
+        "rewrite_seconds": rewrite_seconds,
+        "milliseconds_per_caption": (
+            rewrite_seconds * 1000.0 / size if rewrite_seconds else None
+        ),
+        "outputs_sha256": hashlib.sha256(
+            "\n".join(rewritten).encode("utf-8")
+        ).hexdigest(),
         "examples": examples,
     }
+
+    if (
+        similarity is not None
+        and original_vectors is not None
+        and similarity_info is not None
+    ):
+        rewritten_vectors = _embed_all(similarity, rewritten)
+        scores = [
+            _cosine(left, right)
+            for left, right in zip(original_vectors, rewritten_vectors)
+        ]
+        result["semantic_similarity"] = {
+            "backend": similarity_info.get("backend"),
+            "model": similarity_info.get("model"),
+            "mean": sum(scores) / len(scores) if scores else None,
+            "min": min(scores) if scores else None,
+            "max": max(scores) if scores else None,
+        }
+    else:
+        result["semantic_similarity"] = None
+
+    return result
 
 
 def _summary_text(report: Dict[str, Any]) -> str:
@@ -398,14 +533,17 @@ def _summary_text(report: Dict[str, Any]) -> str:
         f"captions: {report['sample_size']}",
         f"grammar: {report['grammar_backend']['backend']}",
         "",
-        "strategy      changed   introduced   introduced-rate   net-change",
+        "strategy      changed   introduced   introduced-rate   net-change   ms/caption",
     ]
     for name, result in report["strategies"].items():
+        milliseconds = result.get("milliseconds_per_caption")
+        timing = f"{milliseconds:.1f}" if milliseconds is not None else "n/a"
         lines.append(
             f"{name:<12} {result['changed_captions']:>7} "
             f"{result['introduced_captions']:>10} "
             f"{result['introduced_error_rate']:>15.2%} "
-            f"{result['net_error_change']:>11}"
+            f"{result['net_error_change']:>11} "
+            f"{timing:>11}"
         )
     return "\n".join(lines)
 
@@ -426,6 +564,7 @@ def _render_markdown(report: Dict[str, Any]) -> str:
         f"- Split: `{provenance.get('split', 'n/a')}`",
         f"- Selection: {provenance.get('selection', 'n/a')}",
         f"- Grammar backend: `{report['grammar_backend']['backend']}`",
+        f"- Warm-up captions: {report.get('measurement', {}).get('warmup_captions', 0)}",
         "",
         "## Results",
         "",
@@ -447,8 +586,50 @@ def _render_markdown(report: Dict[str, Any]) -> str:
             "LanguageTool matches than the original. `Resolved` counts the "
             "opposite. Rates use the evaluated caption count as the denominator.",
             "",
+            "## Cost and determinism",
+            "",
+            "| Strategy | Rewrite seconds | ms/caption | Output SHA-256 |",
+            "| --- | ---: | ---: | --- |",
         ]
     )
+    for name, result in report["strategies"].items():
+        milliseconds = result.get("milliseconds_per_caption")
+        timing = f"{milliseconds:.2f}" if milliseconds is not None else "n/a"
+        lines.append(
+            f"| {name} | {result.get('rewrite_seconds', 0.0):.2f} | "
+            f"{timing} | `{result['outputs_sha256'][:16]}` |"
+        )
+
+    if report.get("similarity_backend", {}).get("backend") == "fastembed":
+        model = report["similarity_backend"]["model"]
+        lines.extend(
+            [
+                "",
+                f"## Semantic similarity (`{model}`)",
+                "",
+                "| Strategy | Mean cosine | Min | Max |",
+                "| --- | ---: | ---: | ---: |",
+            ]
+        )
+        for name, result in report["strategies"].items():
+            stats = result.get("semantic_similarity")
+            if not stats:
+                continue
+            lines.append(
+                f"| {name} | {stats['mean']:.4f} | {stats['min']:.4f} | "
+                f"{stats['max']:.4f} |"
+            )
+        lines.extend(
+            [
+                "",
+                "Cosine similarity is computed with a separate embedding model from "
+                "the one used by the experimental selector, to reduce circularity. "
+                "It is a coarse proxy for topical overlap, not a measure of meaning "
+                "preservation.",
+            ]
+        )
+
+    lines.append("")
     return "\n".join(lines)
 
 

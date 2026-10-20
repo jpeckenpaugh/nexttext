@@ -1,6 +1,6 @@
 """Public interface for the ``nexttext`` text utilities package."""
 
-from .bias import debias, rebias
+from .bias import debias, inject_bias, rebias
 from .core import normalize_whitespace, word_frequencies
 from .lexicon import (
     NEOPRONOUN_MAP,
@@ -11,13 +11,14 @@ from .lexicon import (
 from .results import DebiasResult, RuleHit
 from .strategies import Strategy, available_strategies, register_strategy
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "normalize_whitespace",
     "word_frequencies",
     "debias",
     "rebias",
+    "inject_bias",
     "DebiasResult",
     "RuleHit",
     "Lexicon",
@@ -28,6 +29,7 @@ __all__ = [
     "available_strategies",
     "register_strategy",
     "nlp_available",
+    "semantic_available",
 ]
 
 
@@ -39,5 +41,17 @@ def nlp_available() -> bool:
     """
 
     from .nlp import available
+
+    return available()
+
+
+def semantic_available() -> bool:
+    """Return whether the experimental embedding backend can be loaded.
+
+    Importing ``nexttext`` never imports the embedding stack; this helper
+    imports it lazily only when called.
+    """
+
+    from .semantic import available
 
     return available()

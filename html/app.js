@@ -3,8 +3,8 @@
 const CONFIG = {
   pyodideVersion: "0.27.2",
   repo: "jpeckenpaugh/nexttext",
-  sourceRef: "v0.2.0",
-  pinnedVersion: "0.2.0",
+  sourceRef: "v0.4.0",
+  pinnedVersion: "0.4.0",
 };
 
 const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${CONFIG.pyodideVersion}/full/`;
@@ -13,6 +13,9 @@ const SOURCE_FILES = [
   "__init__.py",
   "bias.py",
   "core.py",
+  "lexicon.py",
+  "results.py",
+  "strategies.py",
   "data/__init__.py",
   "data/gender_terms.py",
   "data/associative_terms.py",
@@ -31,19 +34,19 @@ const SCENARIOS = [
   },
   {
     id: "rebias-default",
-    title: "Rebias (default)",
+    title: "Inject bias (default)",
     op: "rebias_default",
     text: "A person working on a car.",
   },
   {
     id: "rebias-male",
-    title: "Rebias contextual \u2014 male cues",
+    title: "Inject bias contextual \u2014 male cues",
     op: "rebias_contextual",
     text: "A person working on a car with their tools.",
   },
   {
     id: "rebias-female",
-    title: "Rebias contextual \u2014 female cues",
+    title: "Inject bias contextual \u2014 female cues",
     op: "rebias_contextual",
     text: "A person holding a baby with their flowers.",
   },
@@ -60,7 +63,7 @@ import difflib
 import json
 import re
 
-from nexttext import debias, rebias, normalize_whitespace, word_frequencies
+from nexttext import debias, inject_bias, normalize_whitespace, word_frequencies
 from nexttext.data.associative_terms import get_dominant_gender_from_text
 
 _TOKEN_PATTERN = re.compile(r"\S+\s*")
@@ -94,12 +97,12 @@ def _demo_run(request_json):
     if op == "debias":
         output = debias(labels)
     elif op == "rebias_default":
-        output = rebias(labels, strategy="default")
+        output = inject_bias(labels, strategy="default")
     elif op == "rebias_contextual":
-        output = rebias(labels, strategy="contextual")
+        output = inject_bias(labels, strategy="contextual")
         diagnostics["gender"] = [get_dominant_gender_from_text(line) for line in labels]
     elif op == "round_trip":
-        output = rebias(debias(labels), strategy="contextual")
+        output = inject_bias(debias(labels), strategy="contextual")
         diagnostics["gender"] = [get_dominant_gender_from_text(line) for line in labels]
     elif op == "normalize":
         output = [normalize_whitespace(text)]
