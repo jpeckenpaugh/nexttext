@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/jpeckenpaugh/nexttext/security/advisories/new
+    about: Report security issues privately. Do not open a public issue.
+  - name: Read the contributing guide
+    url: https://github.com/jpeckenpaugh/nexttext/blob/main/CONTRIBUTING.md
+    about: Setup, tests, lint, typing, benchmarks, and pull request expectations.

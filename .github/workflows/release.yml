@@ -201,3 +201,105 @@ jobs:
           assert nexttext.debias(["A man helped her."]) == ["A person helped them."]
           print("nexttext", nexttext.__all__)
           PY
+
+  release-notes:
+    name: Generate release notes
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate notes from CHANGELOG.md or commits
+        run: |
+          python - <<'PY'
+          import re
+          import subprocess
+          from pathlib import Path
+
+          tag = "${{ github.ref_name }}"
+          version = tag[1:] if tag.startswith("v") else tag
+          notes = ""
+          source = "none"
+
+          changelog = Path("CHANGELOG.md")
+          if changelog.exists():
+              text = changelog.read_text(encoding="utf-8")
+              pattern = re.compile(
+                  rf"^##\s+v?{re.escape(version)}(?:\s+-\s+.*)?\s*$",
+                  re.MULTILINE | re.IGNORECASE,
+              )
+              match = pattern.search(text)
+              if match:
+                  rest = text[match.end() :]
+                  next_heading = re.search(r"^##\s+", rest, re.MULTILINE)
+                  section = rest[: next_heading.start()] if next_heading else rest
+                  notes = section.strip()
+                  if notes:
+                      source = "CHANGELOG.md"
+
+          if not notes:
+              previous = subprocess.run(
+                  ["git", "describe", "--tags", "--abbrev=0", f"{tag}^"],
+                  text=True,
+                  capture_output=True,
+                  check=False,
+              )
+              previous_tag = previous.stdout.strip()
+              revision_range = (
+                  f"{previous_tag}..{tag}"
+                  if previous.returncode == 0 and previous_tag
+                  else tag
+              )
+              log = subprocess.run(
+                  [
+                      "git",
+                      "log",
+                      "--no-merges",
+                      "--pretty=format:- %s (%h)",
+                      revision_range,
+                  ],
+                  text=True,
+                  capture_output=True,
+                  check=False,
+              )
+              notes = log.stdout.strip()
+              if notes:
+                  source = f"commits since {previous_tag}" if previous_tag else "commits"
+
+          if not notes:
+              notes = "No changelog entry or commits were available for this tag."
+              print("::warning title=Release notes unavailable::Falling back to a placeholder body.")
+
+          Path("RELEASE_NOTES.md").write_text(
+              f"## {tag}\n\n{notes}\n", encoding="utf-8"
+          )
+          print(f"Generated release notes from {source} for {tag}")
+          PY
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
+          if-no-files-found: warn
+
+      - name: Attach notes to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "::warning title=Release notes skipped::No notes file was generated; continuing without attaching notes."
+            exit 0
+          fi
+          tag="${GITHUB_REF_NAME}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release edit "$tag" --notes-file RELEASE_NOTES.md
+          else
+            gh release create "$tag" --title "$tag" --notes-file RELEASE_NOTES.md --verify-tag
+          fi
