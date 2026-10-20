@@ -96,7 +96,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["pandas", "pandas.*", "yaml"]
+module = ["pandas", "pandas.*", "yaml", "spacy", "spacy.*"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
