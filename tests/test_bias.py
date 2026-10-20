@@ -86,3 +86,77 @@ def test_rebias_leaves_text_without_neutral_terms_unchanged():
 
     labels = ["A narrative about bravery."]
     assert bias.rebias(labels, strategy="contextual") == labels
+
+
+def test_debias_does_not_cross_coordination_boundary():
+    """A possessive phrase must not absorb a coordinated object pronoun."""
+
+    labels = ["He told her and his friends about the man and woman."]
+    expected = ["They told them and their friends about the person and person."]
+    assert bias.debias(labels) == expected
+
+
+def test_debias_prefers_longest_phrase():
+    """The multi-word rule should win over the shorter words it contains."""
+
+    assert bias.debias(["A boy and a girl played."]) == ["Two children played."]
+    assert bias.debias(["A BOY AND A GIRL played."]) == ["TWO CHILDREN played."]
+
+
+def test_debias_expands_contractions_instead_of_rewriting_the_stem():
+    """Contractions should map to full neutral forms, not ``They's``."""
+
+    assert bias.debias(["He's here."]) == ["They are here."]
+    assert bias.debias(["She's here."]) == ["They are here."]
+
+
+def test_debias_uses_plural_verb_for_singular_pronoun_phrase():
+    """``He is`` should be rewritten as ``They are`` rather than ``They is``."""
+
+    assert bias.debias(["He is here."]) == ["They are here."]
+    assert bias.debias(["SHE IS HERE."]) == ["THEY ARE HERE."]
+
+
+def test_debias_handles_mixed_case_deliberately():
+    """Mixed-case terms should map to a capitalized neutral replacement."""
+
+    assert bias.debias(["WoMan"]) == ["Person"]
+    assert bias.debias(["wOmAn"]) == ["Person"]
+
+
+def test_debias_treats_her_as_possessive_determiner_before_nouns():
+    """``her`` before a noun should become ``their``, not ``them``."""
+
+    assert bias.debias(["her patient"]) == ["their patient"]
+    assert bias.debias(["Her hands are folded."]) == ["Their hands are folded."]
+
+
+def test_debias_treats_her_as_object_pronoun_before_function_words():
+    """``her`` not followed by a noun phrase should remain an object pronoun."""
+
+    assert bias.debias(["told her about it"]) == ["told them about it"]
+    assert bias.debias(["with her and his friends"]) == [
+        "with them and their friends"
+    ]
+
+
+def test_debias_can_exclude_proper_nouns():
+    """Explicitly allowlisted proper nouns should be left untouched."""
+
+    labels = ["Man Ray was a photographer."]
+    assert bias.debias(labels, proper_nouns=["Man"]) == labels
+    assert bias.debias(labels) == ["Person Ray was a photographer."]
+
+
+def test_debias_respects_punctuation_boundaries_in_phrases():
+    """Punctuation should prevent a multi-word phrase from spanning clauses."""
+
+    labels = ["A boy, and a girl, played."]
+    assert bias.debias(labels) == ["A child, and a child, played."]
+
+
+def test_debias_respects_sentence_boundaries():
+    """A phrase rule must not merge pronouns across sentence boundaries."""
+
+    labels = ["He is here. She is there."]
+    assert bias.debias(labels) == ["They are here. They are there."]

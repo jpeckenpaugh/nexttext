@@ -68,6 +68,7 @@
           <span id="diagnostics" class="diagnostics" aria-live="polite"></span>
         </div>
         <pre id="output" class="output" aria-live="polite"><span class="muted">Output will appear here.</span></pre>
+        <div id="diff-output" class="diff-output" aria-live="polite" hidden></div>
       </div>
     </section>
 
@@ -87,7 +88,7 @@
         <li>Open source under the MIT license.</li>
       </ul>
       <dl class="meta">
-        <div><dt>Version</dt><dd id="meta-version">0.1.0</dd></div>
+        <div><dt>Pinned version</dt><dd id="meta-version">0.2.0</dd></div>
         <div><dt>License</dt><dd>MIT</dd></div>
         <div><dt>Python</dt><dd id="meta-python">&ge; 3.9</dd></div>
         <div>
@@ -99,8 +100,10 @@
         </div>
       </dl>
       <p class="hint">
-        Loaded from <code id="source-ref-label">main</code> at runtime; the demo
-        always reflects the current sources on that ref.
+        Sources are pinned to release <code id="source-ref-label">v0.2.0</code>
+        at runtime, so the demo keeps working even if <code>main</code> is
+        temporarily broken. Each result shows the before/after text and the
+        rule that fired.
       </p>
     </section>
   </main>

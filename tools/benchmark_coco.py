@@ -1,19 +1,29 @@
-'''
-nexttext_benchmark_v0.0.1.py
+"""Benchmark ``nexttext.debias`` against MS-COCO captions.
 
-A script to benchmark the v0.0.1 debias function against 
-a sample of the MS-COCO dataset and validate the output using LanguageTool.
-This version logs all flagged outliers to a JSON file for analysis.
-'''
-import time
+This optional tool streams person-related MS-COCO captions, debiases them,
+and validates the results with LanguageTool. Flagged outliers are written to
+a JSON file for analysis.
+
+Install the optional dependencies and run from the repository root:
+
+    pip install -e ".[benchmark]"
+    python tools/benchmark_coco.py
+
+LanguageTool also requires Java.
+"""
+
 import json
+import sys
+import time
+
 import datasets as ds
 import language_tool_python
+
 from nexttext import debias
 
 # --- Configuration ---
 SAMPLE_SIZE = 1000  # How many captions to test (can be increased to 1000)
-LOG_FILE = "benchmark_v0.0.1_outliers.json"
+LOG_FILE = "benchmark_coco_outliers.json"
 PERSON_KEYWORDS = [
     "man", "woman", "boy", "girl", "person", "men", "women", 
     "boys", "girls", "people", "he", "she", "him", "her", "kid", "child"
@@ -27,16 +37,16 @@ def contains_person(example):
 
 # --- Main Benchmark Logic ---
 if __name__ == "__main__":
-    print("--- Starting nexttext v0.0.1 Benchmark ---")
+    print("--- Starting nexttext Benchmark ---")
     
     # 1. Initialize Tools
     print("Initializing LanguageTool...")
     try:
         tool = language_tool_python.LanguageTool('en-US')
     except Exception as e:
-        print(f"Error initializing LanguageTool. Please ensure Java is installed.")
+        print("Error initializing LanguageTool. Please ensure Java is installed.")
         print(f"Error: {e}")
-        exit()
+        sys.exit(1)
         
     # 2. Load and Filter Dataset
     print(f"Streaming dataset and filtering for {SAMPLE_SIZE} person-related captions...")
@@ -104,7 +114,7 @@ if __name__ == "__main__":
         print("No grammatical errors were introduced in this sample.")
     else:
         print(f"Found {flagged_count} sentences with new grammatical errors.")
-        print("Detailed report saved to benchmark_v0.0.1_outliers.json")
+        print(f"Detailed report saved to {LOG_FILE}")
         print("\nFirst 5 outliers:")
         for entry in error_log[:5]:
             print(f"\n[{entry['id']}] Original: {entry['original_caption']}")
