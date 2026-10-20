@@ -47,10 +47,43 @@ code {
   font-size: 0.9em;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 10;
+  background: var(--accent);
+  color: #0b1020;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0 0 8px 8px;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 .site-header {
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, #141821, var(--bg));
-  padding: 2rem 0 1.5rem;
+  padding: 1.1rem 0 1.5rem;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--accent);
 }
 
 .site-header h1 {

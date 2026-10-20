@@ -32,6 +32,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/jpeckenpaugh/nexttext"
+Documentation = "https://nexttext.livive.net/docs/"
 Repository = "https://github.com/jpeckenpaugh/nexttext"
 Issues = "https://github.com/jpeckenpaugh/nexttext/issues"
 Changelog = "https://github.com/jpeckenpaugh/nexttext/blob/main/CHANGELOG.md"
