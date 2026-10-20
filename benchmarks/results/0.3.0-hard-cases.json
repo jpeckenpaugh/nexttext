@@ -1,0 +1,86 @@
+{
+  "schema": "nexttext.benchmark.v1",
+  "nexttext_version": "0.3.0",
+  "generated_at": "2026-10-20T01:05:11.351680+00:00",
+  "provenance": {
+    "dataset": "hand-authored diagnostic set",
+    "selection": "targeted hard cases for possessive/object her and subject-verb agreement",
+    "authored_at": "2026-10-20",
+    "license": "same as repository (MIT)",
+    "notes": "Not a random sample and not COCO; used only to isolate known hard cases.",
+    "source": "tests/fixtures/hard_cases.json",
+    "evaluated_size": 16
+  },
+  "sample_size": 16,
+  "grammar_backend": {
+    "backend": "local",
+    "language": "en-US",
+    "version": null
+  },
+  "strategies": {
+    "default": {
+      "strategy": "default",
+      "changed_captions": 16,
+      "changed_rate": 1.0,
+      "baseline_captions_with_errors": 0,
+      "baseline_error_rate": 0.0,
+      "introduced_captions": 14,
+      "introduced_error_rate": 0.875,
+      "introduced_errors": 14,
+      "resolved_errors": 0,
+      "net_error_change": 14,
+      "grammar_checked": true,
+      "examples": [
+        {
+          "index": 0,
+          "original": "She runs to her house.",
+          "rewritten": "They runs to their house.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 1,
+          "original": "He performs a skateboard trick.",
+          "rewritten": "They performs a skateboard trick.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 2,
+          "original": "He does not run to her house.",
+          "rewritten": "They does not run to their house.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 3,
+          "original": "She has a car and her keys.",
+          "rewritten": "They has a car and their keys.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 4,
+          "original": "He was happy about the result.",
+          "rewritten": "They was happy about the result.",
+          "errors_before": 0,
+          "errors_after": 1
+        }
+      ]
+    },
+    "nlp": {
+      "strategy": "nlp",
+      "changed_captions": 16,
+      "changed_rate": 1.0,
+      "baseline_captions_with_errors": 0,
+      "baseline_error_rate": 0.0,
+      "introduced_captions": 0,
+      "introduced_error_rate": 0.0,
+      "introduced_errors": 0,
+      "resolved_errors": 0,
+      "net_error_change": 0,
+      "grammar_checked": true,
+      "examples": []
+    }
+  }
+}

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.0 - 2026-10-20
+- Add a named strategy registry with `default`, `contextual`, and optional
+  `nlp` strategies; `debias` and `rebias` remain backward compatible.
+- Add the optional `nexttext[nlp]` spaCy backend for possessive/object `her`,
+  subject-verb agreement, and proper-noun exclusion, with automatic fallback
+  to the zero-dependency lexical path.
+- Add structured `DebiasResult` objects, per-rule confidence, `with_confidence`
+  output, and `flag_only` review annotations.
+- Add JSON/YAML lexicon overrides, locale selection, and neopronoun mappings.
+- Add a zero-dependency CLI (`nexttext debias`, `nexttext inject-bias`, JSONL)
+  plus pandas and Hugging Face Datasets helpers.
+- Add a reproducible COCO + LanguageTool benchmark, a checked-in offline
+  sample, Hypothesis property tests, and `docs/benchmarks/0.3.0.md`.
+- Keep the default path zero-runtime-dependency and Python 3.9-3.13 support.
+
 ## v0.2.0 - 2026-10-20
 - Fix phrase precedence, casing, contractions, and possessive `her` handling;
   add mixed-case and proper-noun regression coverage.

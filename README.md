@@ -6,10 +6,10 @@
 
 ## Take your text to the next level.
 
-`nexttext` is a lightweight, zero-runtime-dependency Python toolkit for
-**neutralizing and re-framing gendered language** in text. It uses regular
-expressions and curated word lists rather than a language model, so its
-behavior is small, inspectable, and deterministic.
+`nexttext` is a lightweight Python toolkit for **neutralizing and re-framing
+gendered language** in text. Its default path uses regular expressions and
+curated word lists rather than a language model, so behavior is small,
+inspectable, deterministic, and has **zero runtime dependencies**.
 
 It works on **input labels** (human-annotated training data) as well as
 **generated labels** (outputs from captioning or classification models),
@@ -23,8 +23,18 @@ helping you prototype more consistent and testable text pipelines.
   possessives
 - 🔄 **Rebias** → reintroduce controlled skew for testing and validation, with
   optional context-aware strategies
+- 🧭 **Strategy registry** → `default`, `contextual`, and optional `nlp`
+  strategies behind one public API
+- 🧠 **Optional NLP backend** → `nexttext[nlp]` uses spaCy POS/dependency
+  information for possessive/object `her`, subject-verb agreement, and
+  proper-noun exclusion
+- 🛡️ **Confidence and `flag_only`** → inspect structured results or annotate
+  low-confidence rewrites instead of silently changing text
+- 🗂️ **Configurable lexicons** → JSON/YAML overrides, locale selection, and
+  neopronoun mappings
+- 🔌 **Pipeline ergonomics** → CLI, JSONL, pandas accessor, and Hugging Face
+  Datasets helpers
 - 📊 Works on both **training data** and **model outputs**
-- ⚡ Simple API with **no runtime dependencies**
 - 🧪 Longest-phrase matching, casing preservation, and optional proper-noun
   exclusions
 - 🔓 Open-source under a permissive license (MIT)
@@ -46,6 +56,23 @@ you run `debias` and `rebias` on your own text.
 
 ```bash
 pip install .
+```
+
+Optional extras:
+
+```bash
+pip install -e ".[nlp]"      # spaCy-backed nlp strategy
+pip install -e ".[yaml]"     # YAML lexicon files
+pip install -e ".[pandas]"   # pandas accessor
+pip install -e ".[hf]"       # Hugging Face Datasets helper
+pip install -e ".[benchmark]"  # COCO + LanguageTool benchmark
+pip install -e ".[dev]"      # tests, lint, type checks, build
+```
+
+The `nlp` extra also needs an English model:
+
+```bash
+python -m spacy download en_core_web_sm
 ```
 
 For development and tests:
@@ -119,10 +146,11 @@ The rules are applied longest-first, so the multi-word phrase
 preserved for lowercase, uppercase, and title-case matches. Mixed-case matches
 such as `"WoMan"` deliberately use the capitalized replacement (`"Person"`).
 
-`her` is treated as a possessive determiner when it is followed by a word that
-can begin a noun phrase (`"her patient"` → `"their patient"`). Otherwise it is
-treated as an object pronoun (`"told her"` → `"told them"`). This is a lexical
-heuristic, not part-of-speech tagging.
+In the default lexical path, `her` is treated as a possessive determiner when
+it is followed by a word that can begin a noun phrase (`"her patient"` →
+`"their patient"`). Otherwise it is treated as an object pronoun (`"told her"`
+→ `"told them"`). This is a lexical heuristic, not part-of-speech tagging.
+Select `strategy="nlp"` for dependency-aware handling.
 
 Proper nouns are only protected when you list them explicitly. The comparison
 is exact and case-sensitive:
@@ -131,6 +159,168 @@ is exact and case-sensitive:
 >>> debias(["Man Ray was a photographer."], proper_nouns=["Man"])
 ['Man Ray was a photographer.']
 
+```
+
+---
+
+## 🧭 Strategies
+
+```python
+>>> from nexttext import available_strategies
+
+>>> available_strategies()
+['contextual', 'default', 'nlp']
+
+```
+
+- `default` — zero-dependency lexical maps.
+- `contextual` — lexical maps plus keyword-driven feminine rebiasing.
+- `nlp` — optional spaCy POS/dependency strategy. If spaCy or
+  `en_core_web_sm` is unavailable, it falls back to the lexical path.
+
+`debias` and `rebias` are backward compatible: the default call still returns
+a list of strings. Register your own strategy with
+`nexttext.register_strategy(Strategy(...))`.
+
+---
+
+## 🧠 Optional NLP backend
+
+Install the extra and model, then select the strategy:
+
+```bash
+pip install -e ".[nlp]"
+python -m spacy download en_core_web_sm
+```
+
+```python
+from nexttext import debias, rebias, nlp_available
+
+if nlp_available():
+    assert debias(["She runs to her house."], strategy="nlp") == [
+        "They run to their house."
+    ]
+    assert debias(["He told her a story."], strategy="nlp") == [
+        "They told them a story."
+    ]
+    assert debias(["Man Ray was a photographer."], strategy="nlp") == [
+        "Man Ray was a photographer."
+    ]
+    assert rebias(["They run."], strategy="nlp") == ["He runs."]
+```
+
+The benchmark in [`docs/benchmarks/0.3.0.md`](docs/benchmarks/0.3.0.md)
+compares the lexical and NLP paths on 1,000 person-related COCO captions and a
+targeted hard-case suite.
+
+---
+
+## 🛡️ Confidence, structured results, and `flag_only`
+
+Structured results expose the output, whether it changed, the rules that fired,
+per-rule confidence, and whether a rewrite was flagged:
+
+```python
+from nexttext import debias
+
+result = debias(["her patient"], structured=True)[0]
+print(result.output)
+print(result.confidence)   # 0.72
+print(result.rules[0].rule)  # possessive_her
+```
+
+`with_confidence=True` is the compact form:
+
+```python
+>>> debias(["The man."], with_confidence=True)
+[('The person.', 0.9)]
+
+```
+
+`flag_only=True` keeps low-confidence text and appends an annotation instead of
+rewriting it. Callers can route those rows to human review:
+
+```python
+>>> debias(["her patient"], flag_only=True)
+['her patient [[nexttext:review her->their (0.72)]]']
+
+```
+
+High-confidence rewrites are still applied. Adjust the cutoff with
+`confidence_threshold` (default `0.8`). In production, inspect
+`DebiasResult.flagged` and `DebiasResult.rules` before accepting output; never
+assume the neutralized text is semantically equivalent.
+
+---
+
+## 🗂️ Custom lexicons, locales, and neopronouns
+
+Pass a JSON or YAML file, a mapping, a `Lexicon`, or a sequence of those.
+Custom entries are merged onto the built-in English lexicon.
+
+```json
+{
+  "name": "product-terms",
+  "locale": "en-gb",
+  "debias": {"account manager": "support lead", "manager": "lead"},
+  "rebias": {"support lead": "account manager"},
+  "neopronouns": {"fae": "they", "faer": "their"},
+  "female_keywords": ["spacecraft"],
+  "male_keywords": ["tractor"]
+}
+```
+
+```python
+from nexttext import debias
+
+debias(["The account manager met a man."], lexicon="lexicon.json")
+# ['The support lead met a person.']
+```
+
+Built-in neopronouns such as `xe/xem/xyr` and `ze/zir` are neutralized by
+default. Regional English locales (`en-US`, `en-GB`, `en-CA`, `en-AU`) are
+accepted; unsupported locales raise `ValueError` rather than silently falling
+back.
+
+---
+
+## 🖥️ CLI and pipeline integrations
+
+```bash
+# Plain text
+nexttext debias input.txt -o neutral.txt
+
+# JSONL with structured metadata
+nexttext debias --jsonl --field caption --structured captions.jsonl
+
+# Reintroduce bias for robustness testing
+nexttext inject-bias --strategy contextual neutral.txt
+
+# List strategies
+nexttext strategies
+```
+
+`python -m nexttext` works too. The CLI has no third-party dependencies and
+preserves line endings in plain-text mode.
+
+pandas:
+
+```python
+import pandas as pd
+import nexttext.integrations.pandas  # registers .nexttext
+
+frame = pd.DataFrame({"caption": ["A man helped her."]})
+frame.nexttext.debias("caption")
+```
+
+Hugging Face Datasets:
+
+```python
+from datasets import Dataset
+from nexttext.integrations.huggingface import debias_dataset
+
+data = Dataset.from_dict({"caption": ["A man helped her."]})
+neutral = debias_dataset(data)
 ```
 
 ---
@@ -154,37 +344,49 @@ is exact and case-sensitive:
 
 ## ⚠️ Limitations
 
-- **Heuristic, not grammatical.** `nexttext` does not parse sentences. Rules
-  operate on words and a small set of phrases.
-- **Subject–verb agreement is out of scope for this phase.** Rules such as
-  `"He is" → "They are"` and `"He's" → "They are"` fix the common pronoun
-  cases, but other singular/plural rewrites may still disagree with the
-  surrounding verb.
-- **Phrase rules are deliberately conservative.** They do not cross coordination
-  boundaries when doing so would duplicate or drop a referent. For example,
-  `"her and his friends"` stays `"them and their friends"` rather than becoming
-  `"their friends"`.
+- **Heuristic, not grammatical.** The default path does not parse sentences.
+  Rules operate on words and a small set of phrases. The optional `nlp`
+  strategy improves agreement but is not a full grammar checker.
+- **Subject–verb agreement is lexical by default.** Rules such as
+  `"He is" → "They are"` and `"He's" → "They are"` fix common pronoun cases,
+  but other singular/plural rewrites may still disagree with the surrounding
+  verb unless `strategy="nlp"` is installed and selected.
+- **Phrase rules are deliberately conservative.** They do not cross
+  coordination boundaries when doing so would duplicate or drop a referent.
+  For example, `"her and his friends"` stays `"them and their friends"` rather
+  than becoming `"their friends"`.
 - **Word sense is not resolved.** A gendered word used as a name, title, or
-  idiom is rewritten unless it is passed through `proper_nouns`.
-- **Possessive `her` is a heuristic.** A following adverb or unusual sentence
-  structure can still be misclassified.
-- **English only.** The maps and associative keyword lists target English.
-- **No runtime dependencies** means no external NLP models or taggers are used.
+  idiom is rewritten unless it is passed through `proper_nouns`; the `nlp`
+  strategy can protect multi-token names such as `"Man Ray"`.
+- **Possessive `her` is a heuristic in the default path.** A following adverb
+  or unusual sentence structure can still be misclassified.
+- **`flag_only` is a safety aid, not a guarantee.** Low-confidence rewrites
+  are annotated, but high-confidence rules can still change meaning.
+- **English only by default.** Built-in maps and associative keyword lists
+  target English; custom lexicons can supply other mappings.
+- **No runtime dependencies on the default path** means no external NLP models
+  or taggers are used unless the optional extra is installed.
 
 ---
 
 ## 📊 Benchmark
 
-`tools/benchmark_coco.py` streams MS-COCO captions and validates the output
-with LanguageTool. Install the optional benchmark dependencies and run:
+The reproducible benchmark streams person-related MS-COCO captions, caches the
+sample, and checks original and rewritten text with LanguageTool. Results and
+provenance are published in [`docs/benchmarks/0.3.0.md`](docs/benchmarks/0.3.0.md).
 
 ```bash
-pip install -e ".[benchmark]"
-python tools/benchmark_coco.py
+pip install -e ".[benchmark,dev,nlp]"
+python -m spacy download en_core_web_sm
+python tools/benchmark_coco.py --sample-size 1000 \
+    --strategy default --strategy nlp \
+    --output benchmarks/results/0.3.0.json
 ```
 
-LanguageTool also requires Java. The script writes its outliers to
-`benchmark_coco_outliers.json`.
+LanguageTool runs locally and requires Java. Use `--grammar public` for the
+public API or `--grammar off` to measure rewrites only. The checked-in sample
+at `tests/fixtures/coco_captions_sample.json` supports offline runs without
+network access.
 
 ---
 

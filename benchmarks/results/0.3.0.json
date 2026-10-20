@@ -1,0 +1,119 @@
+{
+  "schema": "nexttext.benchmark.v1",
+  "nexttext_version": "0.3.0",
+  "generated_at": "2026-10-20T01:04:38.639511+00:00",
+  "provenance": {
+    "dataset": "jxie/coco_captions",
+    "split": "train",
+    "filter": "person keywords: man, woman, boy, girl, person, men, women, boys, girls, people, he, she, him, her, kid, child",
+    "requested_size": 1000,
+    "fetched_at": "2026-10-20T01:04:09.822781+00:00",
+    "datasets_version": "5.1.0",
+    "selection": "first matching captions in streaming order",
+    "reproduce": "python tools/benchmark_coco.py --sample-size 1000 --dataset jxie/coco_captions --split train",
+    "cache_path": "benchmarks/cache/coco_captions_1000.json",
+    "cache_hit": false,
+    "evaluated_size": 1000
+  },
+  "sample_size": 1000,
+  "grammar_backend": {
+    "backend": "local",
+    "language": "en-US",
+    "version": null
+  },
+  "strategies": {
+    "default": {
+      "strategy": "default",
+      "changed_captions": 267,
+      "changed_rate": 0.267,
+      "baseline_captions_with_errors": 232,
+      "baseline_error_rate": 0.232,
+      "introduced_captions": 8,
+      "introduced_error_rate": 0.008,
+      "introduced_errors": 8,
+      "resolved_errors": 3,
+      "net_error_change": 5,
+      "grammar_checked": true,
+      "examples": [
+        {
+          "index": 21,
+          "original": "A girl smiles as she holds a cat and wears a brightly colored skirt.",
+          "rewritten": "A child smiles as they holds a cat and wears a brightly colored skirt.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 115,
+          "original": "A skateboarder jumps into the air as he performs a skateboard trick.",
+          "rewritten": "A skateboarder jumps into the air as they performs a skateboard trick.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 170,
+          "original": "a man  taking a picture of himself in a bathroom mirror",
+          "rewritten": "a person  taking a picture of themself in a bathroom mirror",
+          "errors_before": 2,
+          "errors_after": 3
+        },
+        {
+          "index": 317,
+          "original": "A man in a safety vest holds him arms up as he stands in front of an airplane.",
+          "rewritten": "A person in a safety vest holds them arms up as they stands in front of an airplane.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 417,
+          "original": "The woman is taking a picture of herself and the giraffe. ",
+          "rewritten": "The person is taking a picture of themself and the giraffe. ",
+          "errors_before": 0,
+          "errors_after": 1
+        }
+      ]
+    },
+    "nlp": {
+      "strategy": "nlp",
+      "changed_captions": 267,
+      "changed_rate": 0.267,
+      "baseline_captions_with_errors": 232,
+      "baseline_error_rate": 0.232,
+      "introduced_captions": 4,
+      "introduced_error_rate": 0.004,
+      "introduced_errors": 4,
+      "resolved_errors": 3,
+      "net_error_change": 1,
+      "grammar_checked": true,
+      "examples": [
+        {
+          "index": 170,
+          "original": "a man  taking a picture of himself in a bathroom mirror",
+          "rewritten": "a person  taking a picture of themself in a bathroom mirror",
+          "errors_before": 2,
+          "errors_after": 3
+        },
+        {
+          "index": 417,
+          "original": "The woman is taking a picture of herself and the giraffe. ",
+          "rewritten": "The person is taking a picture of themself and the giraffe. ",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 863,
+          "original": "Older elephant spraying himself with sand from the ground.",
+          "rewritten": "Older elephant spraying themself with sand from the ground.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 902,
+          "original": "A LARGE SINGLE MALE ELEPHANT GRAZING BY HIMSELF",
+          "rewritten": "A LARGE SINGLE MALE ELEPHANT GRAZING BY THEMSELF",
+          "errors_before": 0,
+          "errors_after": 1
+        }
+      ]
+    }
+  }
+}
