@@ -9,11 +9,41 @@
     name="description"
     content="Interactive in-browser demo of nexttext, a lightweight toolkit for neutralizing text and generating controlled bias for testing AI pipelines."
   />
+  <link rel="canonical" href="https://nexttext.livive.net/" />
+  <meta name="theme-color" content="#0f1115" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="nexttext" />
+  <meta property="og:title" content="nexttext &mdash; live demo" />
+  <meta
+    property="og:description"
+    content="Run nexttext's debias and inject_bias operations in your browser, pinned to a release tag."
+  />
+  <meta property="og:url" content="https://nexttext.livive.net/" />
+  <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="styles.css" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "nexttext",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "description": "A lightweight toolkit for neutralizing text and generating controlled bias for testing AI pipelines.",
+      "url": "https://nexttext.livive.net/",
+      "codeRepository": "https://github.com/jpeckenpaugh/nexttext",
+      "license": "https://github.com/jpeckenpaugh/nexttext/blob/main/LICENSE",
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="wrap">
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/docs/">Documentation</a>
+        <a href="https://github.com/jpeckenpaugh/nexttext" target="_blank" rel="noopener">GitHub</a>
+      </nav>
       <h1>nexttext <span class="tag">live demo</span></h1>
       <p class="lede">
         A lightweight toolkit for neutralizing text and generating controlled
@@ -27,7 +57,7 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main" tabindex="-1">
     <section class="panel" aria-labelledby="scenarios-heading">
       <h2 id="scenarios-heading">Demo scenarios</h2>
       <p class="hint">
@@ -107,6 +137,10 @@
         rule that fired.
       </p>
       <p class="hint">
+        Read the <a href="/docs/">documentation</a> for the API reference,
+        cookbook, limitations, theory, and benchmark reports.
+      </p>
+      <p class="hint">
         <strong>Safety:</strong> this demo provides no fairness guarantees and is
         not for deceptive or high-stakes content. Bias injection is for testing
         only; generated variants are synthetic and should stay labeled as such.
@@ -118,6 +152,8 @@
     <div class="wrap">
       <span>nexttext &middot; MIT licensed</span>
       <span>
+        <a href="/docs/">Documentation</a>
+        &middot;
         <a href="https://github.com/jpeckenpaugh/nexttext" target="_blank" rel="noopener">GitHub</a>
         &middot;
         <a href="https://github.com/jpeckenpaugh/nexttext/blob/main/README.md" target="_blank" rel="noopener">README</a>

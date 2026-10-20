@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% set social_title = page.title if page and page.title else config.site_name %}
+  {% set social_description = page.meta.description if page and page.meta and page.meta.description else config.site_description %}
+  {% set social_url = page.canonical_url if page and page.canonical_url else config.site_url %}
+  <meta name="author" content="nexttext contributors" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="{{ config.site_name }}" />
+  <meta property="og:title" content="{{ social_title }}" />
+  <meta property="og:description" content="{{ social_description }}" />
+  <meta property="og:url" content="{{ social_url }}" />
+  <meta name="twitter:card" content="summary" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": {{ social_title | tojson }},
+      "description": {{ social_description | tojson }},
+      "url": {{ social_url | tojson }},
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "nexttext",
+        "url": "https://nexttext.livive.net/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "nexttext contributors"
+      }
+    }
+  </script>
+{% endblock %}

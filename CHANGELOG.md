@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+- Add a static documentation site built in CI and deployed to
+  `https://nexttext.livive.net/docs/`, with API reference, cookbook,
+  limitations, intended-use, theory, benchmark, and contribution pages sourced
+  from the repository docs.
+- Keep the pinned interactive demo at the custom-domain root, add SEO metadata,
+  sitemap/robots discovery, and accessibility landmarks, and deploy Pages only
+  after the main CI workflow succeeds.
+
 ## v0.4.0 - 2026-10-20
 - Add `docs/theoretical_background.md`, covering the types of bias the library
   can and cannot address, the limits of lexical replacement, the meaning of
