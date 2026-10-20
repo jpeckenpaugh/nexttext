@@ -1,0 +1,63 @@
+name: Feature request
+description: Suggest a capability, integration, or documentation improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Please describe the problem before the
+        proposed solution so maintainers can evaluate alternatives.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what is missing or difficult today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, CLI, integration, or documentation you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches, workarounds, or prior art.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - debias / rebias behavior
+        - strategy or NLP backend
+        - lexicons and locales
+        - CLI and pipeline integrations
+        - documentation
+        - benchmarking
+        - packaging, CI, or release tooling
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      description: Show what the proposed change might look like.
+      render: python
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Constraints
+      options:
+        - label: The default `debias` / `rebias` path can stay zero-dependency (or this proposal explains why not).
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
