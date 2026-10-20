@@ -1,5 +1,11 @@
 # nexttext: Testing and Validation Plan
 
+> `nexttext` is a lightweight toolkit for neutralizing text and generating
+> controlled bias for testing AI pipelines. This plan describes how the
+> library's rewrites are measured; it is not a fairness certification. See
+> [`theoretical_background.md`](theoretical_background.md) for the scope and
+> limits of the metrics.
+
 ## 1. Overview and Goals
 
 This document outlines the standardized process for testing, validating, and benchmarking the `nexttext` library. The primary goal is not to achieve 100% accuracy, but to **quantify the performance** of the library's heuristic-based approach on real-world data, starting with version `0.0.1`.

@@ -88,6 +88,24 @@ def test_rebias_leaves_text_without_neutral_terms_unchanged():
     assert bias.rebias(labels, strategy="contextual") == labels
 
 
+def test_inject_bias_is_the_explicit_rebias_alias():
+    """``inject_bias`` should match ``rebias`` for both built-in maps."""
+
+    labels = ["A person working on a car with their tools."]
+    assert bias.inject_bias(labels) == bias.rebias(labels)
+    assert bias.inject_bias(labels, strategy="contextual") == bias.rebias(
+        labels, strategy="contextual"
+    )
+
+
+def test_inject_bias_is_exported_from_the_package():
+    """The test-oriented name should be part of the public interface."""
+
+    import nexttext
+
+    assert nexttext.inject_bias is bias.inject_bias
+
+
 def test_debias_does_not_cross_coordination_boundary():
     """A possessive phrase must not absorb a coordinated object pronoun."""
 

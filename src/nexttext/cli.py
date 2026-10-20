@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, TextIO
 
 from nexttext import __version__
-from nexttext.bias import debias, rebias
+from nexttext.bias import debias, inject_bias
 from nexttext.strategies import available_strategies
 
 _PROGRAM = "nexttext"
@@ -184,7 +184,7 @@ def _run_inject_bias(args: argparse.Namespace) -> int:
     lexicon = list(args.lexicon) or None
 
     def transform(values: List[str]) -> List[str]:
-        return rebias(
+        return inject_bias(
             values,
             strategy=args.strategy,
             lexicon=lexicon,

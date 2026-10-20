@@ -1,0 +1,148 @@
+{
+  "schema": "nexttext.benchmark.v1",
+  "nexttext_version": "0.4.0",
+  "generated_at": "2026-10-20T01:30:00.526140+00:00",
+  "provenance": {
+    "dataset": "jxie/coco_captions",
+    "split": "train",
+    "filter": "person keywords: man, woman, boy, girl, person, men, women, boys, girls, people, he, she, him, her, kid, child",
+    "requested_size": 1000,
+    "fetched_at": "2026-10-20T01:04:09.822781+00:00",
+    "datasets_version": "5.1.0",
+    "selection": "first 250 captions from the cached 1000-caption person-related sample",
+    "reproduce": "python tools/benchmark_coco.py --sample-size 1000 --dataset jxie/coco_captions --split train",
+    "sample_of": 1000,
+    "cache_path": "benchmarks/cache/coco_captions_1000.json",
+    "note": "The full 1,000-caption run is documented in docs/benchmarks/0.3.0.md; this checked-in subset keeps offline runs small.",
+    "source": "tests/fixtures/coco_captions_sample.json",
+    "evaluated_size": 250
+  },
+  "sample_size": 250,
+  "grammar_backend": {
+    "backend": "local",
+    "language": "en-US",
+    "version": null
+  },
+  "similarity_backend": {
+    "backend": "fastembed",
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fastembed_version": "0.9.0"
+  },
+  "measurement": {
+    "warmup_captions": 5,
+    "timing": "rewrite wall-clock after warm-up",
+    "determinism": "SHA-256 of newline-joined outputs"
+  },
+  "strategies": {
+    "default": {
+      "strategy": "default",
+      "changed_captions": 79,
+      "changed_rate": 0.316,
+      "baseline_captions_with_errors": 50,
+      "baseline_error_rate": 0.2,
+      "introduced_captions": 3,
+      "introduced_error_rate": 0.012,
+      "introduced_errors": 3,
+      "resolved_errors": 0,
+      "net_error_change": 3,
+      "grammar_checked": true,
+      "rewrite_seconds": 0.004438350966665894,
+      "milliseconds_per_caption": 0.017753403866663575,
+      "outputs_sha256": "4bf4749792f2bd00b2e7277101e0728236086c0b9d13999eb5cf196813549cef",
+      "examples": [
+        {
+          "index": 21,
+          "original": "A girl smiles as she holds a cat and wears a brightly colored skirt.",
+          "rewritten": "A child smiles as they holds a cat and wears a brightly colored skirt.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 115,
+          "original": "A skateboarder jumps into the air as he performs a skateboard trick.",
+          "rewritten": "A skateboarder jumps into the air as they performs a skateboard trick.",
+          "errors_before": 0,
+          "errors_after": 1
+        },
+        {
+          "index": 170,
+          "original": "a man  taking a picture of himself in a bathroom mirror",
+          "rewritten": "a person  taking a picture of themself in a bathroom mirror",
+          "errors_before": 2,
+          "errors_after": 3
+        }
+      ],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.9708536318118022,
+        "min": 0.7736682200479639,
+        "max": 1.0000000000000002
+      }
+    },
+    "nlp": {
+      "strategy": "nlp",
+      "changed_captions": 79,
+      "changed_rate": 0.316,
+      "baseline_captions_with_errors": 50,
+      "baseline_error_rate": 0.2,
+      "introduced_captions": 1,
+      "introduced_error_rate": 0.004,
+      "introduced_errors": 1,
+      "resolved_errors": 0,
+      "net_error_change": 1,
+      "grammar_checked": true,
+      "rewrite_seconds": 0.409574399003759,
+      "milliseconds_per_caption": 1.638297596015036,
+      "outputs_sha256": "8af6bfa7301179a07afcbbfb26dbfc6a61870944b041abbe0cb109ad2d8377d6",
+      "examples": [
+        {
+          "index": 170,
+          "original": "a man  taking a picture of himself in a bathroom mirror",
+          "rewritten": "a person  taking a picture of themself in a bathroom mirror",
+          "errors_before": 2,
+          "errors_after": 3
+        }
+      ],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.9708321215633773,
+        "min": 0.7736682200479639,
+        "max": 1.0000000000000002
+      }
+    },
+    "semantic": {
+      "strategy": "semantic",
+      "changed_captions": 79,
+      "changed_rate": 0.316,
+      "baseline_captions_with_errors": 50,
+      "baseline_error_rate": 0.2,
+      "introduced_captions": 1,
+      "introduced_error_rate": 0.004,
+      "introduced_errors": 1,
+      "resolved_errors": 0,
+      "net_error_change": 1,
+      "grammar_checked": true,
+      "rewrite_seconds": 1.0250940849655308,
+      "milliseconds_per_caption": 4.100376339862123,
+      "outputs_sha256": "6645b8f4d4c381b962dd2c1e6e9a38108e6cef74f1abbd8567200706f410c80a",
+      "examples": [
+        {
+          "index": 170,
+          "original": "a man  taking a picture of himself in a bathroom mirror",
+          "rewritten": "a person  taking a picture of themself in a bathroom mirror",
+          "errors_before": 2,
+          "errors_after": 3
+        }
+      ],
+      "semantic_similarity": {
+        "backend": "fastembed",
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "mean": 0.971095016274958,
+        "min": 0.7736682200479639,
+        "max": 1.0000000000000002
+      }
+    }
+  }
+}

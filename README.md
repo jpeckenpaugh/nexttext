@@ -6,10 +6,10 @@
 
 ## Take your text to the next level.
 
-`nexttext` is a lightweight Python toolkit for **neutralizing and re-framing
-gendered language** in text. Its default path uses regular expressions and
-curated word lists rather than a language model, so behavior is small,
-inspectable, deterministic, and has **zero runtime dependencies**.
+`nexttext` is a lightweight toolkit for **neutralizing text and generating
+controlled bias for testing AI pipelines**. Its default path uses regular
+expressions and curated word lists rather than a language model, so behavior is
+small, inspectable, deterministic, and has **zero runtime dependencies**.
 
 It works on **input labels** (human-annotated training data) as well as
 **generated labels** (outputs from captioning or classification models),
@@ -21,13 +21,16 @@ helping you prototype more consistent and testable text pipelines.
 
 - 🧹 **Debias** → neutralize gendered nouns, pronouns, contractions, and
   possessives
-- 🔄 **Rebias** → reintroduce controlled skew for testing and validation, with
-  optional context-aware strategies
-- 🧭 **Strategy registry** → `default`, `contextual`, and optional `nlp`
-  strategies behind one public API
+- 🧪 **Inject bias** → `inject_bias` (and the compatible `rebias` name)
+  reintroduces controlled skew for testing and validation, with optional
+  context-aware strategies
+- 🧭 **Strategy registry** → `default`, `contextual`, optional `nlp`, and an
+  experimental `semantic` strategy behind one public API
 - 🧠 **Optional NLP backend** → `nexttext[nlp]` uses spaCy POS/dependency
   information for possessive/object `her`, subject-verb agreement, and
   proper-noun exclusion
+- 📚 **Documented theory and limits** → the background page explains which
+  biases lexical rewriting can touch and what "neutral" cannot guarantee
 - 🛡️ **Confidence and `flag_only`** → inspect structured results or annotate
   low-confidence rewrites instead of silently changing text
 - 🗂️ **Configurable lexicons** → JSON/YAML overrides, locale selection, and
@@ -46,7 +49,8 @@ helping you prototype more consistent and testable text pipelines.
 Try `nexttext` directly in your browser (no install required) at
 **[jpeckenpaugh.github.io/nexttext](https://jpeckenpaugh.github.io/nexttext/)**.
 The demo loads the Python package via [Pyodide](https://pyodide.org) and lets
-you run `debias` and `rebias` on your own text.
+you run `debias` and `inject_bias` on your own text. It is a demonstration of
+the lightweight default path, not a fairness evaluation tool.
 
 ---
 
@@ -62,6 +66,7 @@ Optional extras:
 
 ```bash
 pip install -e ".[nlp]"      # spaCy-backed nlp strategy
+pip install -e ".[semantic]" # experimental embedding-assisted strategy
 pip install -e ".[yaml]"     # YAML lexicon files
 pip install -e ".[pandas]"   # pandas accessor
 pip install -e ".[hf]"       # Hugging Face Datasets helper
@@ -74,6 +79,10 @@ The `nlp` extra also needs an English model:
 ```bash
 python -m spacy download en_core_web_sm
 ```
+
+The experimental `semantic` extra needs Python 3.10 or newer because its
+embedding dependency does. On Python 3.9 the strategy falls back to `nlp` (or
+the lexical path), so the package itself still supports 3.9.
 
 For development and tests:
 
@@ -94,7 +103,7 @@ real coverage report on each push to `main`.
 ## 🚀 Quick Start
 
 ```python
->>> from nexttext import debias, rebias
+>>> from nexttext import debias, inject_bias, rebias
 
 >>> labels = [
 ...   "A man seated at a table talking to a young girl.",
@@ -108,11 +117,11 @@ A person seated at a table talking to a young child.
 A child kneeling to receive communion. Their hands are folded in prayer.
 A doctor speaking with their patient while a nurse takes their vitals.
 
-# Context-aware rebiasing uses associated keywords when they are present.
->>> rebias(["A person working on a car with their tools."], strategy="contextual")
+# Context-aware bias injection uses associated keywords when they are present.
+>>> inject_bias(["A person working on a car with their tools."], strategy="contextual")
 ['A man working on a car with his tools.']
 
->>> rebias(["A person holding a baby."], strategy="contextual")
+>>> inject_bias(["A person holding a baby."], strategy="contextual")
 ['A woman holding a baby.']
 
 # Round trip: neutralize, then reintroduce skew.
@@ -120,6 +129,11 @@ A doctor speaking with their patient while a nurse takes their vitals.
 ['A woman holding a baby.']
 
 ```
+
+`inject_bias` is the explicit, test-oriented name. `rebias` is the
+backward-compatible name for the same operation, so existing code keeps
+working. Bias injection is for testing; see
+[Misuse and safety](#️-misuse-and-safety).
 
 ### Behavior notes
 
@@ -169,7 +183,7 @@ is exact and case-sensitive:
 >>> from nexttext import available_strategies
 
 >>> available_strategies()
-['contextual', 'default', 'nlp']
+['contextual', 'default', 'nlp', 'semantic']
 
 ```
 
@@ -177,9 +191,13 @@ is exact and case-sensitive:
 - `contextual` — lexical maps plus keyword-driven feminine rebiasing.
 - `nlp` — optional spaCy POS/dependency strategy. If spaCy or
   `en_core_web_sm` is unavailable, it falls back to the lexical path.
+- `semantic` — experimental embedding-assisted rewrite selection. It requires
+  `nexttext[semantic]`, falls back to `nlp` (or the lexical path) when the
+  embedding model is unavailable, and is **not** recommended for production.
+  See [`docs/decisions/advanced-backends.md`](docs/decisions/advanced-backends.md).
 
-`debias` and `rebias` are backward compatible: the default call still returns
-a list of strings. Register your own strategy with
+`debias`, `inject_bias`, and `rebias` are backward compatible: the default call
+still returns a list of strings. Register your own strategy with
 `nexttext.register_strategy(Strategy(...))`.
 
 ---
@@ -209,9 +227,24 @@ if nlp_available():
     assert rebias(["They run."], strategy="nlp") == ["He runs."]
 ```
 
-The benchmark in [`docs/benchmarks/0.3.0.md`](docs/benchmarks/0.3.0.md)
-compares the lexical and NLP paths on 1,000 person-related COCO captions and a
-targeted hard-case suite.
+The benchmark in [`docs/benchmarks/0.4.0.md`](docs/benchmarks/0.4.0.md)
+compares the lexical, NLP, and experimental semantic paths on a checked-in COCO
+sample and a targeted hard-case suite. The decision memo in
+[`docs/decisions/advanced-backends.md`](docs/decisions/advanced-backends.md)
+reports the cost, determinism, and promotion decision.
+
+---
+
+## 📚 Theory and scope
+
+The theory page, [`docs/theoretical_background.md`](docs/theoretical_background.md),
+explains the types of bias the library can and cannot address, why lexical
+replacement is limited, what "neutral" can and cannot mean, and the ethics of
+controlled stereotype injection. It cites the established work behind those
+claims rather than asserting a fairness guarantee.
+
+For a performance-focused case study of the lexical path, see
+[`docs/optimization_strategies.md`](docs/optimization_strategies.md).
 
 ---
 
@@ -340,6 +373,23 @@ neutral = debias_dataset(data)
 - Replacing inclusive-language review or human editing.
 - Claiming that the output is unbiased, objective, or semantically correct.
 
+## ⚠️ Misuse and safety
+
+- **No fairness guarantees.** `nexttext` rewrites surface forms. It does not
+  remove stereotypes from data or models, and it does not make a system fair,
+  compliant, or safe.
+- **Do not use for deceptive or high-stakes content.** Do not use the library
+  to generate misleading descriptions of real people or to produce medical,
+  legal, financial, safety, or other consequential material without expert
+  review.
+- **Bias injection is for testing only.** `inject_bias` and `rebias` exist to
+  create controlled variants for robustness testing, red-teaming, and
+  demonstrations. Keep generated variants labeled as synthetic, separate from
+  production data, and out of any workflow that presents them as facts.
+- **Review before accepting output.** Inspect `DebiasResult.flagged` and
+  `DebiasResult.rules`; use `flag_only` to route uncertain rewrites to a human.
+  "Neutral" is a policy choice, not a proof of correctness.
+
 ---
 
 ## ⚠️ Limitations
@@ -372,21 +422,26 @@ neutral = debias_dataset(data)
 ## 📊 Benchmark
 
 The reproducible benchmark streams person-related MS-COCO captions, caches the
-sample, and checks original and rewritten text with LanguageTool. Results and
-provenance are published in [`docs/benchmarks/0.3.0.md`](docs/benchmarks/0.3.0.md).
+sample, and checks original and rewritten text with LanguageTool. It records
+rewrite cost, output hashes, and optional embedding similarity. Results and
+provenance are published in [`docs/benchmarks/0.4.0.md`](docs/benchmarks/0.4.0.md).
 
 ```bash
-pip install -e ".[benchmark,dev,nlp]"
+pip install -e ".[benchmark,dev,nlp,semantic]"
 python -m spacy download en_core_web_sm
-python tools/benchmark_coco.py --sample-size 1000 \
-    --strategy default --strategy nlp \
-    --output benchmarks/results/0.3.0.json
+python tools/benchmark_coco.py \
+    --captions-file tests/fixtures/coco_captions_sample.json \
+    --sample-size 250 \
+    --strategy default --strategy nlp --strategy semantic \
+    --grammar local --similarity fastembed --warmup 5 \
+    --output benchmarks/results/0.4.0.json
 ```
 
 LanguageTool runs locally and requires Java. Use `--grammar public` for the
 public API or `--grammar off` to measure rewrites only. The checked-in sample
 at `tests/fixtures/coco_captions_sample.json` supports offline runs without
-network access.
+network access. The Phase 2 results and the 1,000-caption methodology remain in
+[`docs/benchmarks/0.3.0.md`](docs/benchmarks/0.3.0.md).
 
 ---
 

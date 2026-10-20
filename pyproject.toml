@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nexttext"
-version = "0.3.0"
-description = "Zero-dependency heuristic tools for neutralizing and re-introducing gendered language in text."
+version = "0.4.0"
+description = "A lightweight toolkit for neutralizing text and generating controlled bias for testing AI pipelines."
 authors = [
   { name = "NextText Maintainers" }
 ]
@@ -53,6 +53,10 @@ dev = [
 ]
 benchmark = ["datasets>=2.0", "language-tool-python>=2.7"]
 nlp = ["spacy>=3.4"]
+semantic = [
+  "spacy>=3.4",
+  "fastembed>=0.4; python_version >= '3.10'",
+]
 yaml = ["PyYAML>=6"]
 pandas = ["pandas>=1.5"]
 hf = ["datasets>=2.0"]
@@ -96,7 +100,7 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["pandas", "pandas.*", "yaml", "spacy", "spacy.*"]
+module = ["pandas", "pandas.*", "yaml", "spacy", "spacy.*", "fastembed", "fastembed.*"]
 ignore_missing_imports = true
 
 [tool.coverage.run]

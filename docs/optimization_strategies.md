@@ -1,3 +1,9 @@
+> `nexttext` is a lightweight toolkit for neutralizing text and generating
+> controlled bias for testing AI pipelines. This case study covers performance
+> work on the lexical path. For the assumptions behind that path, what
+> "neutral" can and cannot mean, and the limits of lexical replacement, see
+> [`theoretical_background.md`](theoretical_background.md).
+
 ## Case Study: Optimizing the `debias` Function for Scale
 
 This document details the performance optimization journey for the core `debias` function. It serves as a practical guide for tackling similar high-throughput text processing challenges, ensuring that solutions are not only correct but also scalable. The core challenge was evolving from a function that was either fast *or* correct to one that was both fast *and* correct.
@@ -127,3 +133,11 @@ Core Lessons Learned
 2. Trade Upfront Cost for Runtime Speed: Pre-computing all possible variations (like casing) is a powerful strategy. A negligible one-time setup cost is almost always worth it to eliminate millions of conditional checks and function calls at runtime.
 
 3. Delegate Logic to the Optimized Engine: Let the tool do the heavy lifting. Instead of iterating in Python, combine keywords into a single, complex pattern and let the re engine perform the search in one highly optimized pass.
+
+## Further reading
+
+These optimizations make the lexical path faster. They do not make it a
+fairness method. See [`theoretical_background.md`](theoretical_background.md)
+for the scope of lexical replacement and the ethics of controlled bias
+injection, and [`decisions/advanced-backends.md`](decisions/advanced-backends.md)
+for the `0.4.0` evaluation of heavier backends.

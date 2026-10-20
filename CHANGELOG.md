@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.4.0 - 2026-10-20
+- Add `docs/theoretical_background.md`, covering the types of bias the library
+  can and cannot address, the limits of lexical replacement, the meaning of
+  "neutral", and the ethics of controlled stereotype injection, with citations.
+- Adopt one product statement across the README, docs, and demo: a lightweight
+  toolkit for neutralizing text and generating controlled bias for testing AI
+  pipelines.
+- Add `inject_bias` as the explicit test-oriented public API name and keep
+  `rebias` as the backward-compatible alias; document the safety and misuse
+  boundaries.
+- Add an experimental `semantic` strategy behind the optional
+  `nexttext[semantic]` extra. It selects neutral synonym variants with a local
+  embedding model and is not part of the default path.
+- Extend the benchmark harness with rewrite timing, output hashes, and an
+  optional independent embedding-similarity metric; publish the 0.4.0 COCO and
+  hard-case results and the `docs/decisions/advanced-backends.md` memo.
+- Keep the default path zero-runtime-dependency, Python 3.9-3.13 support, and
+  the existing package name and API shapes.
+
 ## v0.3.0 - 2026-10-20
 - Add a named strategy registry with `default`, `contextual`, and optional
   `nlp` strategies; `debias` and `rebias` remain backward compatible.
